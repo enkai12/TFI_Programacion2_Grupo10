@@ -4,7 +4,7 @@
 
 ---
 
-## 👥 Integrantes del Equipo
+## Integrantes del Equipo
 
 | Nombre y Apellido        | Email de Contacto                                                           | Comisión |
 | ------------------------ | --------------------------------------------------------------------------- | -------- |
@@ -15,7 +15,7 @@
 
 ---
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 📦 TFI_Programacion2_Grupo10
@@ -35,11 +35,11 @@
 
 ---
 
-## 🧩 1. Descripción del Dominio Elegido
+## 1. Descripción del Dominio Elegido
 
 Se seleccionó el dominio **Empleado (A) → Legajo (B)** por su aplicabilidad para cumplir con todos los objetivos técnicos y de negocio establecidos en el Trabajo Final Integrador.
 
-### 🔹 Justificación de la Elección
+### Justificación de la Elección
 
 El requisito principal del trabajo es modelar una **asociación unidireccional 1 a 1**, y el dominio `Empleado → Legajo` representa este escenario de forma natural en un sistema de gestión de personal. Un *Empleado* posee un único *Legajo* en su expediente, y un *Legajo* pertenece exclusivamente a un *Empleado*.
 
@@ -47,7 +47,7 @@ Esta correlación directa permite implementar la restricción **1 a 1** en la ba
 
 Además, el dominio permite aplicar de manera práctica el uso de **transacciones (commit/rollback)**. El alta de un empleado constituye un caso ideal para demostrar la atomicidad: la creación de un *Empleado* (entidad A) requiere la creación simultánea de su *Legajo* (entidad B). Si alguna de las inserciones falla (por ejemplo, por violar una restricción `UNIQUE` en `nro_legajo`), toda la operación debe revertirse, asegurando la integridad del sistema.
 
-### 🔹 Reglas de Negocio y Validaciones
+### Reglas de Negocio y Validaciones
 
 El sistema se apoya en un conjunto de validaciones que garantizan la consistencia de los datos y la correcta gestión del personal:
 
@@ -75,16 +75,16 @@ El sistema se apoya en un conjunto de validaciones que garantizan la consistenci
   * Cada `Empleado` tiene un único `Legajo`.
   * Si un `Empleado` se elimina, su `Legajo` asociado también se borra (`ON DELETE CASCADE`).
 
-### 🔹 Unidireccionalidad del Modelo
+### Unidireccionalidad del Modelo
 
 El flujo de negocio está pensado en sentido único: *dado un empleado, obtener su legajo*.
 Esto justifica una asociación unidireccional donde la entidad `Empleado` conoce a `Legajo`, pero no a la inversa, cumpliendo con la consigna del TFI.
 
 ---
 
-## ⚙️ 2. Requisitos y Pasos para Crear la Base de Datos
+## 2. Requisitos y Pasos para Crear la Base de Datos
 
-### 🔸 Requisitos Técnicos
+### Requisitos Técnicos
 
 * **Java JDK 17 o superior**
 * **MySQL 8.0 o superior**
@@ -94,7 +94,9 @@ Esto justifica una asociación unidireccional donde la entidad `Empleado` conoce
 
 ---
 
-## 🧱 3. Importación del Proyecto en Apache NetBeans
+---
+
+## 3. Importación del Proyecto en Apache NetBeans
 
 Dado que los archivos del entorno (`nbproject/`, `build.xml`, etc.) no se incluyen en el repositorio por buenas prácticas de versionado, se debe importar el código fuente existente en NetBeans de la siguiente manera:
 
@@ -105,14 +107,29 @@ Dado que los archivos del entorno (`nbproject/`, `build.xml`, etc.) no se incluy
 5. En **Source Package Folders**, seleccionar la carpeta `src/` del repositorio clonado.  
 6. En **Project Folder**, elegir la ubicación donde se guardará el proyecto.  
 7. Presionar **Finish**.  
+8. Una vez creado el proyecto, en el panel izquierdo hacer **clic derecho sobre “Libraries” → Add JAR/Folder...**  
+9. Seleccionar el archivo **`mysql-connector-j-8.4.0.jar`** ubicado dentro de la carpeta `/lib/` del repositorio.  
+10. Confirmar con **Open** y verificar que el JAR aparezca en la lista de librerías del proyecto.  
+11. Luego, abrir el archivo **`config.properties`** (ubicado en la carpeta `src/config/` o en la raíz del proyecto) y completar las credenciales de conexión a MySQL:
 
-Esto generará automáticamente los archivos de configuración locales de NetBeans (`nbproject/`, `build.xml`, etc.) y permitirá compilar y ejecutar el proyecto sin problemas.
+    ```properties
+    db.url=jdbc:mysql://localhost:3306/tpi_prog2_empleados
+    db.user=root
+    db.password=tu_contraseña
+    db.driver=com.mysql.cj.jdbc.Driver
+    ```
+
+    ⚠️ *Es importante reemplazar `tu_contraseña` por la clave real del usuario `root` en tu instalación local de MySQL.*
+
+Con esto, NetBeans generará automáticamente los archivos de configuración locales (`nbproject/`, `build.xml`, etc.), agregará el conector JDBC y establecerá los parámetros de conexión a la base de datos.  
+El proyecto quedará listo para compilar y ejecutar correctamente desde el IDE.
 
 ---
 
 
 
-### 🔸 Creación de la Base de Datos
+
+### Creación de la Base de Datos
 
 1. Abrir **DBeaver** y conectarse a MySQL como usuario `root`.
 
@@ -137,15 +154,6 @@ Esto generará automáticamente los archivos de configuración locales de NetBea
    ```sql
    SELECT * FROM empleado;
    SELECT * FROM legajo;
-   ```
-
-5. Configurar en el archivo `config.properties` los parámetros de conexión JDBC:
-
-   ```properties
-   db.url=jdbc:mysql://localhost:3306/tpi_prog2_empleados
-   db.user=root
-   db.password=tu_contraseña
-   db.driver=com.mysql.cj.jdbc.Driver
    ```
 
 ---
