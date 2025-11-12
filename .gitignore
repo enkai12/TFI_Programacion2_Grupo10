@@ -19,7 +19,7 @@ hs_err_pid*
 replay_pid*
 
 # ===== NetBeans =====
-/nbproject/private/
+/nbproject/
 /build/
 /dist/
 /nbbuild/
@@ -29,7 +29,7 @@ manifest.mf
 
 # ===== DBeaver / Eclipse =====
 .dbeaver/
-.project  <-- AÑADIDO PARA IGNORAR EL ARCHIVO DE DBEAVER
+*.project
 *.sql.bak
 *.sql~
 .workspace/
