@@ -9,6 +9,9 @@
 *.nar
 *.ear
 
+# ...EXCEPTO el driver de mysql que SÍ necesitamos
+!lib/
+
 # ===== Logs y temporales =====
 *.log
 *.tmp
