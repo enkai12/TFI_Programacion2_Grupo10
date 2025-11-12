@@ -50,10 +50,10 @@ Thumbs.db
 # ========================================
 # ARCHIVOS DE CONFIGURACIÓN
 # ========================================
-# Ignorar todos los archivos de entorno y propiedades...
+# Ignorar todos los archivos de entorno y propiedades sensibles...
 *.env
 *.config
 *.properties
 
-# ...EXCEPTO el archivo de configuración de la BD.
-!config.properties
+# ...EXCEPTO el archivo de plantilla de configuración
+!config.properties.example
