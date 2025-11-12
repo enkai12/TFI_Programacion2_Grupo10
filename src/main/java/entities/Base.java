@@ -1,4 +1,4 @@
-package Models;
+package entities;
 
 /**
  * Clase base abstracta para todas las entidades del sistema.

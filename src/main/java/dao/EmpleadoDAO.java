@@ -1,4 +1,4 @@
-package Dao;
+package dao;
 
 /**
  * Data Access Object para la entidad Empleado.
@@ -11,7 +11,7 @@ package Dao;
  *
  * Patrón: DAO con try-with-resources para manejo automático de recursos JDBC
  */
-public class EmpleadoDAO implements GenericDAO<Empleado> {
+public class EmpleadoDao implements GenericDao<Empleado> {
     
     
 }

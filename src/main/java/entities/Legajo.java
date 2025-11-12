@@ -1,7 +1,7 @@
-package Models;
+package entities;
 
 /**
- * Entidad que representa una persona en el sistema.
+ * Entidad que representa un legajo en el sistema.
  * Hereda de Base para obtener id y eliminado.
  *
  * Relación con Empleado:
@@ -15,13 +15,13 @@ package Models;
  * - ....
  * - eliminado: BOOLEAN DEFAULT FALSE (heredado de Base)
  */
-public class Persona extends Base {
+public class Legajo extends Base {
     
     // Atributos
  
     // Constructor
     
     // Métodos
-    
   
+    
 }

@@ -1,4 +1,4 @@
-package Service;
+package service;
 
 /**
  * Implementación del servicio de negocio para la entidad Legajo.
