@@ -92,6 +92,26 @@ Esto justifica una asociación unidireccional donde la entidad `Empleado` conoce
 * **Apache NetBeans IDE 19 o superior**
 * **Conector JDBC MySQL (`mysql-connector-j-8.4.0.jar`)**
 
+---
+
+## 🧱 3. Importación del Proyecto en Apache NetBeans
+
+Dado que los archivos del entorno (`nbproject/`, `build.xml`, etc.) no se incluyen en el repositorio por buenas prácticas de versionado, se debe importar el código fuente existente en NetBeans de la siguiente manera:
+
+1. Abrir **Apache NetBeans**.  
+2. Ir a **File → New Project...**  
+3. Seleccionar **Java with Ant → Java Project with Existing Sources** y presionar **Next**.  
+4. Asignar el nombre del proyecto (por ejemplo, `TFI_Programacion2_Grupo10`).  
+5. En **Source Package Folders**, seleccionar la carpeta `src/` del repositorio clonado.  
+6. En **Project Folder**, elegir la ubicación donde se guardará el proyecto.  
+7. Presionar **Finish**.  
+
+Esto generará automáticamente los archivos de configuración locales de NetBeans (`nbproject/`, `build.xml`, etc.) y permitirá compilar y ejecutar el proyecto sin problemas.
+
+---
+
+
+
 ### 🔸 Creación de la Base de Datos
 
 1. Abrir **DBeaver** y conectarse a MySQL como usuario `root`.
