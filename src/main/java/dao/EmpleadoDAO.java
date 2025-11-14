@@ -9,84 +9,73 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object (DAO) para la entidad Empleado.
- * Implementa GenericDao<Empleado> y gestiona toda la persistencia
- * de los objetos Empleado en la base de datos.
- * Características:
- * - Implementa GenericDAO<Empleado> para operaciones CRUD estándar
- * - Usa PreparedStatements en TODAS las consultas (protección contra SQL injection)
- * - Proporciona búsquedas especializadas
+ * Data Access Object (DAO) para la entidad Empleado. Implementa
+ * GenericDao<Empleado> y gestiona toda la persistencia de los objetos Empleado
+ * en la base de datos. Características: - Implementa GenericDAO<Empleado> para
+ * operaciones CRUD estándar - Usa PreparedStatements en TODAS las consultas
+ * (protección contra SQL injection) - Proporciona búsquedas especializadas
  *
  * Patrón: DAO con try-with-resources para manejo automático de recursos JDBC
  *
- * RESPONSABILIDAD CLAVE:
- * Esta clase maneja el LEFT JOIN con la tabla 'legajo' para
- * cargar la relación 1-a-1 (A->B) al leer Empleados.
+ * RESPONSABILIDAD CLAVE: Esta clase maneja el LEFT JOIN con la tabla 'legajo'
+ * para cargar la relación 1-a-1 (A->B) al leer Empleados.
  */
 public class EmpleadoDAO implements GenericDAO<Empleado> {
 
     // --- QUERIES SQL (EMPLEADO) ---
+    private static final String INSERT_SQL
+            = "INSERT INTO empleado (nombre, apellido, dni, email, fecha_ingreso, area) VALUES (?, ?, ?, ?, ?, ?)";
 
-    private static final String INSERT_SQL =
-            "INSERT INTO empleado (nombre, apellido, dni, email, fecha_ingreso, area) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL
+            = "UPDATE empleado SET nombre = ?, apellido = ?, dni = ?, email = ?, fecha_ingreso = ?, area = ? WHERE id = ?";
 
-    private static final String UPDATE_SQL =
-            "UPDATE empleado SET nombre = ?, apellido = ?, dni = ?, email = ?, fecha_ingreso = ?, area = ? WHERE id = ?";
-
-    private static final String DELETE_SQL =
-            "UPDATE empleado SET eliminado = TRUE WHERE id = ?";
-
+    private static final String DELETE_SQL
+            = "UPDATE empleado SET eliminado = TRUE WHERE id = ?";
 
     // --- QUERIES SQL (EMPLEADO + LEGAJO con JOIN) ---
+    private static final String SELECT_BY_ID_SQL
+            = "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, "
+            + "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones "
+            + "FROM empleado e "
+            + "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE "
+            + "WHERE e.id = ? AND e.eliminado = FALSE";
 
-    private static final String SELECT_BY_ID_SQL =
-            "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, " +
-                    "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones " +
-                    "FROM empleado e " +
-                    "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE " +
-                    "WHERE e.id = ? AND e.eliminado = FALSE";
-
-    private static final String SELECT_ALL_SQL =
-            "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, " +
-                    "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones " +
-                    "FROM empleado e " +
-                    "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE " +
-                    "WHERE e.eliminado = FALSE";
-
+    private static final String SELECT_ALL_SQL
+            = "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, "
+            + "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones "
+            + "FROM empleado e "
+            + "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE "
+            + "WHERE e.eliminado = FALSE";
 
     // --- QUERIES DE BÚSQUEDA ---
-
     /**
-     * SQL para buscar un Empleado por DNI (búsqueda exacta).
-     * El DNI es UNIQUE en la BD, por lo que esto debe devolver 1 o 0 resultados.
-     * Incluye el LEFT JOIN para cargar el Legajo.
+     * SQL para buscar un Empleado por DNI (búsqueda exacta). El DNI es UNIQUE
+     * en la BD, por lo que esto debe devolver 1 o 0 resultados. Incluye el LEFT
+     * JOIN para cargar el Legajo.
      */
-    private static final String SELECT_BY_DNI_SQL =
-            "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, " +
-                    "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones " +
-                    "FROM empleado e " +
-                    "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE " +
-                    "WHERE e.dni = ? AND e.eliminado = FALSE";
+    private static final String SELECT_BY_DNI_SQL
+            = "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, "
+            + "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones "
+            + "FROM empleado e "
+            + "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE "
+            + "WHERE e.dni = ? AND e.eliminado = FALSE";
 
     /**
      * SQL para buscar Empleados por Nombre o Apellido (búsqueda flexible).
-     * Usamos LIKE '%filtro%' para encontrar coincidencias parciales.
-     * Incluye el LEFT JOIN para cargar el Legajo.
+     * Usamos LIKE '%filtro%' para encontrar coincidencias parciales. Incluye el
+     * LEFT JOIN para cargar el Legajo.
      */
-    private static final String SELECT_BY_NAME_SQL =
-            "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, " +
-                    "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones " +
-                    "FROM empleado e " +
-                    "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE " +
-                    "WHERE (e.nombre LIKE ? OR e.apellido LIKE ?) AND e.eliminado = FALSE";
-
+    private static final String SELECT_BY_NAME_SQL
+            = "SELECT e.id AS emp_id, e.nombre, e.apellido, e.dni, e.email, e.fecha_ingreso, e.area, "
+            + "l.id AS leg_id, l.nro_legajo, l.categoria, l.estado, l.fecha_alta, l.observaciones "
+            + "FROM empleado e "
+            + "LEFT JOIN legajo l ON e.id = l.empleado_id AND l.eliminado = FALSE "
+            + "WHERE (e.nombre LIKE ? OR e.apellido LIKE ?) AND e.eliminado = FALSE";
 
     // --- MÉTODOS GENÉRICOS ("contrato" con GenericDAO) ---
-
     @Override
     public void crear(Empleado empleado) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             setEmpleadoParameters(stmt, empleado);
             stmt.executeUpdate();
@@ -116,8 +105,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
 
     @Override
     public void actualizar(Empleado empleado) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
 
             setEmpleadoParameters(stmt, empleado);
             stmt.setLong(7, empleado.getId());
@@ -145,8 +133,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
 
     @Override
     public void eliminar(long id) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
 
             stmt.setLong(1, id);
 
@@ -172,8 +159,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
 
     @Override
     public Empleado leer(long id) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
 
             stmt.setLong(1, id);
 
@@ -189,9 +175,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
     @Override
     public List<Empleado> leerTodos() throws SQLException {
         List<Empleado> empleados = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 empleados.add(mapResultSetToEmpleado(rs));
@@ -200,12 +184,10 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
         return empleados;
     }
 
-
     // --- MÉTODOS DE BÚSQUEDA ---
-
     /**
-     * Busca un Empleado por su DNI (búsqueda exacta).
-     * Dado que el DNI es ÚNICO, devuelve un solo Empleado o null.
+     * Busca un Empleado por su DNI (búsqueda exacta). Dado que el DNI es ÚNICO,
+     * devuelve un solo Empleado o null.
      *
      * @param dni El DNI exacto a buscar.
      * @return El Empleado encontrado (con su Legajo) o null si no existe.
@@ -216,8 +198,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
             return null; // O lanzar new IllegalArgumentException("El DNI no puede ser nulo o vacío");
         }
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_DNI_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_BY_DNI_SQL)) {
 
             stmt.setString(1, dni.trim());
 
@@ -232,7 +213,8 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
     }
 
     /**
-     * Busca Empleados cuyo nombre o apellido coincidan con el filtro (búsqueda flexible).
+     * Busca Empleados cuyo nombre o apellido coincidan con el filtro (búsqueda
+     * flexible).
      *
      * @param filtro El texto a buscar (ej: "gar", "Mar").
      * @return Una lista de Empleados que coinciden (puede estar vacía).
@@ -247,8 +229,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
         // Preparamos el patrón LIKE: '%filtro%'
         String searchPattern = "%" + filtro.trim() + "%";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_NAME_SQL)) {
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(SELECT_BY_NAME_SQL)) {
 
             stmt.setString(1, searchPattern); // Para e.nombre LIKE ?
             stmt.setString(2, searchPattern); // Para e.apellido LIKE ?
@@ -263,9 +244,7 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
         return empleados;
     }
 
-
     // --- MÉTODOS AUXILIARES (Helpers, para cumplir con DRY en los métodos genéricos) ---
-
     private void setEmpleadoParameters(PreparedStatement stmt, Empleado empleado) throws SQLException {
         stmt.setString(1, empleado.getNombre());
         stmt.setString(2, empleado.getApellido());
@@ -303,10 +282,10 @@ public class EmpleadoDAO implements GenericDAO<Empleado> {
             legajo.setNroLegajo(rs.getString("nro_legajo"));
             legajo.setCategoria(rs.getString("categoria"));
 
-            String estado = rs.getString("estado");
-            if (estado != null) {
-                // Asumiendo que 'estado' es un String en tu entidad Legajo
-                legajo.setEstado(estado);
+            String estadoStr = rs.getString("estado");
+            if (estadoStr != null) {
+                // Convertir el string al enum por ejemplo "Activo" EstadoLegajo.ACTIVO
+                legajo.setEstado(entities.EstadoLegajo.valueOf(estadoStr));
             }
 
             Date fechaAlta = rs.getDate("fecha_alta");
