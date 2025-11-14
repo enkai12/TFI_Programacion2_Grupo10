@@ -7,6 +7,7 @@ package main;
 import java.util.Scanner;
 import dao.EmpleadoDAO;
 import dao.LegajoDAO;
+
 import service.EmpleadoServiceImpl;
 import service.LegajoServiceImpl;
 
