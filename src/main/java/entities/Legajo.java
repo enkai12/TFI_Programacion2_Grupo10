@@ -1,7 +1,7 @@
 package entities;
 
-import java.util.Date;
-
+// import java.util.Date; esto es antiguo..
+import java.time.LocalDate;
 
 
 /**
@@ -14,13 +14,13 @@ import java.util.Date;
  *
  * Tabla BD: legajo
  * Campos:
- * - id: int AUTO_INCREMENT PRIMARY KEY UNIQUE NOT NULL (heredado de Base)
- * - eliminado: BOOLEAN DEFAULT FALSE NOT NULL (heredado de Base)
- * - nro_legajo: String NOT NULL 
- * - categoria: String
- * - estado: enum('ACTIVO, INCACTIVO') NOT NULL
- * - feha_alta: date
- * - observaciones: String
+ * - id: BIGINT AUTO_INCREMENT PRIMARY KEY (heredado de Base)
+ * - eliminado: BOOLEAN DEFAULT FALSE (heredado de Base)
+ * - nro_legajo: VARCHAR(20) NOT NULL 
+ * - categoria: VARCHAR(30)
+ * - estado: ENUM('ACTIVO','INACTIVO') NOT NULL
+ * - fecha_alta: DATE NOT NULL
+ * - observaciones: VARCHAR(255)
  */
 public class Legajo extends Base {
     
@@ -28,13 +28,14 @@ public class Legajo extends Base {
     private String numeroLegajo;
     private String categoria;
     private EstadoLegajo estado; // Enum (estado contractual activo o inactivo)
-    private Date fechaAlta; // Creación administrativa en el sistema
+    private LocalDate fechaAlta;
     private String observaciones;
     
     // Constructor
     
-    public Legajo(String numeroLegajo, String categoria, EstadoLegajo estado, Date fechaAlta, String observaciones) {
-        super(); // Llama al constructor de Base que contiene id y eliminado por defecto
+    public Legajo(String numeroLegajo, String categoria, EstadoLegajo estado, 
+                  LocalDate fechaAlta, String observaciones) {
+        super(); // Llama al constructor de Base (id=0, eliminado=false)
         this.numeroLegajo = numeroLegajo;
         this.categoria = categoria;
         this.estado = estado;
@@ -43,11 +44,9 @@ public class Legajo extends Base {
     }
 
     public Legajo() {
-        super();
+        super(); // Inicializa id=0, eliminado=false
     }
     
-    
-  
     
     // Getters y Setters
 
@@ -75,11 +74,11 @@ public class Legajo extends Base {
         this.estado = estado;
     }
 
-    public Date getFechaAlta() {
+    public LocalDate getFechaAlta() {
         return fechaAlta;
     }
 
-    public void setFechaAlta(Date fechaAlta) {
+    public void setFechaAlta(LocalDate fechaAlta) {
         this.fechaAlta = fechaAlta;
     }
 
@@ -102,7 +101,11 @@ public class Legajo extends Base {
 
     @Override
     public String toString() {
-        return "NumeroLegajo= " + getNumeroLegajo() + ", categoria= " + getCategoria() + ", estado= " + getEstado() + ", fechaAlta= " + getFechaAlta() + ", observaciones= " + getObservaciones();
+        return "Legajo [Número: " + getNumeroLegajo() 
+                + ", Categoría: " + getCategoria() 
+                + ", Estado: " + getEstado() 
+                + ", Fecha Alta: " + getFechaAlta() 
+                + ", Observaciones: " + getObservaciones() + "]";
     }
     
 }

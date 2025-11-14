@@ -7,13 +7,18 @@ import java.time.LocalDate;
  * Entidad que representa un empleado en el sistema. Hereda de Base para obtener
  * id y eliminado.
  *
- * Relación con Empleado: Asociación unidireccional 1 a 1. Empleado -> Legajo
+ * Relación con Legajo: Asociación unidireccional 1 a 1. Empleado -> Legajo
  *
- * Tabla BD: empleado Campos: - id: int AUTO_INCREMENT PRIMARY KEY UNIQUE NOT
- * NULL (heredado de Base) - eliminado: BOOLEAN DEFAULT FALSE NOT NULL (heredado
- * de Base) - nombre: String NOT NULL - apellido: String NOT NULL - dni: String
- * UNIQUE NOT NULL - email: String - fecha_ingreso: Date (Corregido a LocalDate)
- * - area: String
+ * Tabla BD: empleado 
+ * Campos:
+ * - id: BIGINT AUTO_INCREMENT PRIMARY KEY (heredado de Base)
+ * - eliminado: BOOLEAN DEFAULT FALSE (heredado de Base)
+ * - nombre: VARCHAR(80) NOT NULL
+ * - apellido: VARCHAR(80) NOT NULL  
+ * - dni: VARCHAR(15) UNIQUE NOT NULL
+ * - email: VARCHAR(120)
+ * - fecha_ingreso: DATE
+ * - area: VARCHAR(50)
  */
 public class Empleado extends Base {
 
@@ -29,8 +34,9 @@ public class Empleado extends Base {
     private Legajo legajo; // Asociación 1:1 unidireccional con Legajo
 
     // Constructores
-    public Empleado(String nombre, String apellido, String dni, String email, Date fechaIngreso, String area, Legajo legajo) { // Completo para el DAO y trabajar desde la BD
-        super(); // Llama al constructor de Base que contiene id y eliminado por defecto
+    public Empleado(String nombre, String apellido, String dni, String email, 
+                   LocalDate fechaIngreso, String area, Legajo legajo) {
+        super(); // Llama al constructor de Base (id=0, eliminado=false)
         this.nombre = nombre;
         this.apellido = apellido;
         this.dni = dni;
@@ -123,7 +129,7 @@ public class Empleado extends Base {
                 + "\nFecha de Ingreso: " + getFechaIngreso()
                 + "\nArea: " + getArea()
                 + "\nEliminado: " + isEliminado()
-                + "\nLegajo: (" + getLegajo() + ").\n";
+                + "\nLegajo: " + (getLegajo() != null ? getLegajo().toString() : "No asignado");
     }
 
 }
