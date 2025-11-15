@@ -30,7 +30,7 @@ public class LegajoDAO implements GenericDAO<Legajo> {
      * SQL para insertar un Legajo (B). Requiere el 'empleado_id' (FK de A).
      */
     private static final String INSERT_SQL
-            = "INSERT INTO legajo (nro_legajo, categoria, estado, fecha_alta, observaciones, empleado_id) "
+            = "INSERT INTO legajo (nroLegajo, categoria, estado, fechaAlta, observaciones, empleado_id) "
             + "VALUES (?, ?, ?, ?, ?, ?)";
 
     /**
@@ -38,7 +38,7 @@ public class LegajoDAO implements GenericDAO<Legajo> {
      * el 'empleado_id', ya que la relación 1-a-1 es fija.
      */
     private static final String UPDATE_SQL
-            = "UPDATE legajo SET nro_legajo = ?, categoria = ?, estado = ?, fecha_alta = ?, observaciones = ? "
+            = "UPDATE legajo SET nroLegajo = ?, categoria = ?, estado = ?, fechaAlta = ?, observaciones = ? "
             + "WHERE id = ?";
 
     /**
@@ -67,7 +67,7 @@ public class LegajoDAO implements GenericDAO<Legajo> {
      * 'nro_legajo' es UNIQUE en la BD.
      */
     private static final String SELECT_BY_NRO_LEGAJO_SQL
-            = "SELECT * FROM legajo WHERE nro_legajo = ? AND eliminado = FALSE";
+            = "SELECT * FROM legajo WHERE nroLegajo = ? AND eliminado = FALSE";
 
 //    // --- IMPLEMENTACIÓN DE MÉTODOS GENÉRICOS (Relación con GenericDAO) ---
 //
@@ -370,24 +370,31 @@ public class LegajoDAO implements GenericDAO<Legajo> {
     }
 
     /**
+     * GENERA ERROR DE COMPILACIÓN setLegajoParameters por la firma. 
+     * No se usa.
+     */
+    
+    /**
      * Método auxiliar para ejecutar la lógica de creación. Es llamado tanto por
      * crear() como por crearTx(). NO cierra la conexión.
-     */
-    private void ejecutarCreacion(Legajo legajo, Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+     
+        private void ejecutarCreacion(Legajo legajo, Connection conn) throws SQLException {
+            try (PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-            setLegajoParameters(stmt, legajo);
-            stmt.executeUpdate();
+                setLegajoParameters(stmt, legajo);
+                stmt.executeUpdate();
 
-            // Obtenemos el ID autogenerado
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    legajo.setId(rs.getLong(1));
+                // Obtenemos el ID autogenerado
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        legajo.setId(rs.getLong(1));
+                    }
                 }
             }
         }
-    }
-
+    */
+    
+    
     /**
      * Método auxiliar para ejecutar la lógica de eliminación (baja lógica). Es
      * llamado tanto por eliminar() como por eliminarTx(). NO cierra la
@@ -433,7 +440,7 @@ public class LegajoDAO implements GenericDAO<Legajo> {
         Legajo legajo = new Legajo();
 
         legajo.setId(rs.getLong("id"));
-        legajo.setNroLegajo(rs.getString("nro_legajo"));
+        legajo.setNumeroLegajo(rs.getString("nroLegajo"));
         legajo.setCategoria(rs.getString("categoria"));
 
         // CORRECCIÓN (Conflicto 3): Convertir String de BD a Enum
@@ -443,7 +450,7 @@ public class LegajoDAO implements GenericDAO<Legajo> {
         }
 
         // CORRECCIÓN (Conflicto 2): Usar LocalDate
-        java.sql.Date fechaAlta = rs.getDate("fecha_alta");
+        java.sql.Date fechaAlta = rs.getDate("fechaAlta");
         if (fechaAlta != null) {
             legajo.setFechaAlta(fechaAlta.toLocalDate());
         }
@@ -454,4 +461,16 @@ public class LegajoDAO implements GenericDAO<Legajo> {
         // en la entidad Legajo, respetando la unidireccionalidad
         return legajo;
     }
+    
+    /**
+     * Método abstracto
+     * Lanzamos un error porque nuestra regla de negocio prohíbe crear un Legajo por sí solo. 
+     * Se debe usar el método crearTx.
+     */
+    @Override
+    public void crear(Legajo legajo) throws SQLException {
+        throw new UnsupportedOperationException("No puede crear Legajo sin Empleado");
+    }
+    
+    
 }
