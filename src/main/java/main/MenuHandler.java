@@ -120,8 +120,10 @@ public class MenuHandler {
     /**
      * Muestra todos los legajos activos.
      */
+    public void listarLegajos() throws Exception {
         List<Legajo> legajos = legajoService.getAll();
         printList(LEGAJO_LIST_HEADER, NO_LEGAJOS_FOUND, legajos);
+    }
 
     public void actualizarLegajo() {
         throw new UnsupportedOperationException(ERROR_ACTUALIZAR_LEGAJO_NOT_IMPLEMENTED);
