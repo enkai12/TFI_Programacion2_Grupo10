@@ -28,15 +28,17 @@ public class MenuHandler {
     private static final String NO_EMPLOYEES_FOUND = "No hay empleados para mostrar.";
     private static final String NO_LEGAJOS_FOUND = "No hay legajos para mostrar.";
 
+    // Títulos / prompts reutilizables
+    private static final String TITLE_CREAR_EMPLEADO_LEGAJO = "== Crear Empleado y Legajo ==";
+    private static final String TITLE_BUSCAR_EMPLEADO = "== Buscar empleado por ID ==";
+    private static final String PROMPT_ID_EMPLEADO = "ID del empleado a buscar: ";
+    private static final String INVALID_OPTION_STATE_MESSAGE = "Opción inválida. Intente nuevamente.\n";
+
     // Constantes para operaciones no implementadas / reglas de negocio
-    private static final String ERROR_CREAR_EMPLEADO_NOT_IMPLEMENTED =
-            "Crear empleado aún no está implementado.";
     private static final String ERROR_ACTUALIZAR_EMPLEADO_NOT_IMPLEMENTED =
             "Actualizar empleado aún no está implementado.";
     private static final String ERROR_ELIMINAR_EMPLEADO_NOT_IMPLEMENTED =
             "Eliminar empleado aún no está implementado.";
-    private static final String ERROR_BUSCAR_EMPLEADO_NOT_IMPLEMENTED =
-            "Buscar empleado por ID aún no está implementado.";
     private static final String ERROR_CREAR_LEGAJO_NOT_SUPPORTED =
             "Crear legajo directamente está deshabilitado; debe crearse junto con un Empleado.";
     private static final String ERROR_ACTUALIZAR_LEGAJO_NOT_IMPLEMENTED =
