@@ -38,95 +38,68 @@ public class AppMenu {
         this.running = true;
     }
 
-    /**
-     * Punto de entrada de la aplicación Java. Crea instancia de AppMenu y
-     * ejecuta el menú principal.
-     *
-     * @param args Argumentos de línea de comandos (no usados)
-     */
-    public static void main(String[] args) {
-        AppMenu app = new AppMenu();
-        app.run();
-    }
+    // ... existing code ...
 
-    /**
-     * Loop principal del menú.
-     *
-     * Flujo: 1. Mientras running==true: a. Muestra menú con
-     * MenuDisplay.mostrarMenuPrincipal() b. Lee opción del usuario
-     * (scanner.nextLine()) c. Convierte a int (puede lanzar
-     * NumberFormatException) d. Procesa opción con processOption() 2. Si el
-     * usuario ingresa texto no numérico: Muestra mensaje de error y continúa 3.
-     * Cuando running==false (opción 0): Sale del loop y cierra Scanner
-     *
-     * Manejo de errores: - NumberFormatException: Captura entrada no numérica
-     * (ej: "abc") - Muestra mensaje amigable y NO termina la aplicación - El
-     * usuario puede volver a intentar
-     *
-     * IMPORTANTE: El Scanner se cierra al salir del loop. Cerrar
-     * Scanner(System.in) cierra System.in para toda la aplicación.
-     */
     public void run() {
         while (running) {
-            try {
-                MenuDisplay.mostrarMenuPrincipal();
-                int opcion = Integer.parseInt(scanner.nextLine());
-                processOption(opcion);
-            } catch (NumberFormatException e) {
-                System.out.println("Entrada invalida. Por favor, ingrese un número.");
+            Integer opcion = readMenuOption();
+            if (opcion != null) {
+                handleMenuOption(opcion);
             }
         }
         scanner.close();
     }
 
     /**
+     * Muestra el menú principal, lee la opción del usuario y la convierte a int.
+     * Maneja internamente los errores de formato de número.
+     *
+     * @return La opción ingresada o null si la entrada fue inválida.
+     */
+    private Integer readMenuOption() {
+        MenuDisplay.mostrarMenuPrincipal();
+        String input = scanner.nextLine();
+        try {
+            return Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            System.out.println(INVALID_INPUT_MESSAGE);
+            return null;
+        }
+    }
+
+    /**
      * Procesa la opción seleccionada por el usuario y delega a MenuHandler.
-     *
-     * Mapeo de opciones (corresponde a MenuDisplay): 1 → Crear persona (con
-     * domicilio opcional) 2 → Listar personas (todas o filtradas) 3 →
-     * Actualizar persona 4 → Eliminar persona (soft delete) 5 → Crear domicilio
-     * independiente 6 → Listar domicilios 7 → Actualizar domicilio por ID
-     * (afecta a todas las personas que lo comparten) 8 → Eliminar domicilio por
-     * ID (PELIGROSO - puede dejar FKs huérfanas) 9 → Actualizar domicilio de
-     * una persona (afecta a todas las personas que lo comparten) 10 → Eliminar
-     * domicilio de una persona (SEGURO - actualiza FK primero) 0 → Salir (setea
-     * running=false para terminar el loop)
-     *
-     * Opción inválida: Muestra mensaje y continúa el loop.
-     *
-     * IMPORTANTE: Todas las excepciones de MenuHandler se capturan dentro de
-     * los métodos. processOption() NO propaga excepciones al caller (run()).
      *
      * @param opcion Número de opción ingresado por el usuario
      */
-    private void processOption(int opcion) {
+    private void handleMenuOption(int opcion) {
         switch (opcion) {
             case 1 ->
-                menuHandler.crearEmpleado();
+                    menuHandler.crearEmpleado();
             case 2 ->
-                menuHandler.listarEmpleados();
+                    menuHandler.listarEmpleados();
             case 3 ->
-                menuHandler.actualizarEmpleado();
+                    menuHandler.actualizarEmpleado();
             case 4 ->
-                menuHandler.eliminarEmpleado();
+                    menuHandler.eliminarEmpleado();
             case 5 ->
-                menuHandler.buscarEmpleadoID();
+                    menuHandler.buscarEmpleadoID();
             case 6 ->
-                menuHandler.crearLegajo();
+                    menuHandler.crearLegajo();
             case 7 ->
-                menuHandler.listarLegajos();
+                    menuHandler.listarLegajos();
             case 8 ->
-                menuHandler.actualizarLegajo();
+                    menuHandler.actualizarLegajo();
             case 9 ->
-                menuHandler.eliminarLegajo();
+                    menuHandler.eliminarLegajo();
             case 10 ->
-                menuHandler.listarLegajoPorEstado();
-            case 0 -> {
+                    menuHandler.listarLegajoPorEstado();
+            case EXIT_OPTION -> {
                 System.out.println("Saliendo...");
                 running = false;
             }
             default ->
-                System.out.println("Opción no valida.");
+                    System.out.println("Opción no valida.");
         }
     }
 
