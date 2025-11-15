@@ -198,7 +198,87 @@ public class MenuHandler {
         throw new UnsupportedOperationException(ERROR_LISTAR_LEGAJOS_POR_ESTADO_NOT_IMPLEMENTED);
     }
 
-    // --- Helpers privados ---
+    // --- Helpers privados (entrada de datos) ---
+
+    /**
+     * Lee desde consola todos los datos necesarios para construir
+     * un Empleado con su Legajo asociado.
+     */
+    private Empleado readEmpleadoWithLegajoFromInput() {
+        // Datos de Empleado
+        System.out.print("Nombre: ");
+        String nombre = scanner.nextLine().trim();
+
+        System.out.print("Apellido: ");
+        String apellido = scanner.nextLine().trim();
+
+        System.out.print("DNI: ");
+        String dni = scanner.nextLine().trim();
+
+        System.out.print("Email: ");
+        String email = scanner.nextLine().trim();
+
+        System.out.print("Área: ");
+        String area = scanner.nextLine().trim();
+
+        System.out.print("Fecha de Ingreso (AAAA-MM-DD): ");
+        LocalDate fechaIngreso = LocalDate.parse(scanner.nextLine());
+
+        System.out.println("\n--- Datos del Legajo (Requerido) ---");
+
+        // Datos de Legajo
+        System.out.print("Número de Legajo: ");
+        String numeroLegajo = scanner.nextLine().trim();
+
+        EstadoLegajo estado = leerEstadoLegajo();
+
+        System.out.print("Categoría: ");
+        String categoria = scanner.nextLine().trim();
+
+        System.out.print("Observaciones (opcional): ");
+        String observaciones = scanner.nextLine().trim();
+
+        System.out.print("Fecha de Alta (AAAA-MM-DD): ");
+        LocalDate fechaAlta = LocalDate.parse(scanner.nextLine());
+
+        Legajo legajoNuevo = new Legajo(numeroLegajo, categoria, estado, fechaAlta, observaciones);
+        return new Empleado(nombre, apellido, dni, email, fechaIngreso, area, legajoNuevo);
+    }
+
+    /**
+     * Helper para leer y validar el ID de empleado desde consola.
+     */
+    private long readEmpleadoIdFromInput() {
+        System.out.print(PROMPT_ID_EMPLEADO);
+        String input = scanner.nextLine();
+        // NumberFormatException (IllegalArgumentException) se propaga a AppMenu
+        return Long.parseLong(input);
+    }
+
+    /**
+     * Helper privado para leer y validar el Estado del Legajo.
+     */
+    private EstadoLegajo leerEstadoLegajo() {
+        while (true) {
+            System.out.println("Seleccione el estado del legajo:");
+            System.out.println("  1 - ACTIVO");
+            System.out.println("  2 - INACTIVO");
+            System.out.print("Opción: ");
+
+            String opcion = scanner.nextLine();
+
+            switch (opcion) {
+                case "1":
+                    return EstadoLegajo.ACTIVO;
+                case "2":
+                    return EstadoLegajo.INACTIVO;
+                default:
+                    System.out.println(INVALID_OPTION_STATE_MESSAGE);
+            }
+        }
+    }
+
+    // --- Helpers privados (presentación) ---
 
     /**
      * Imprime una lista de elementos con encabezado, mensaje de lista vacía y separador.
