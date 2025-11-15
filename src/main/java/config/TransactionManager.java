@@ -113,13 +113,6 @@ public class TransactionManager implements AutoCloseable {
     }
 
     /**
-     * Indica si hay una transacción actualmente activa.
-     */
-    private boolean hasActiveTransaction() {
-        return transactionActive;
-    }
-
-    /**
      * Resetea el estado interno de la transacción después de commit/rollback.
      */
     private void resetTransactionState() {
