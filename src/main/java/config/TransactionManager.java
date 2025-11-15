@@ -27,7 +27,7 @@ public class TransactionManager implements AutoCloseable {
      */
     public TransactionManager(Connection connection) {
         if (connection == null) {
-            throw new IllegalArgumentException("La conexión no puede ser null");
+            throw new IllegalArgumentException(ERROR_CONNECTION_NULL);
         }
         this.connection = connection;
         this.transactionActive = false;
@@ -47,7 +47,7 @@ public class TransactionManager implements AutoCloseable {
      */
     public void startTransaction() throws SQLException {
         if (connection.isClosed()) {
-            throw new SQLException("No se puede iniciar la transacción: conexión cerrada");
+            throw new SQLException(ERROR_CLOSED_CONNECTION);
         }
         connection.setAutoCommit(false);
         transactionActive = true;
