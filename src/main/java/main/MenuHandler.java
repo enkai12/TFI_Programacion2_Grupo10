@@ -1,10 +1,8 @@
-
 package main;
 
 import entities.Empleado;
 import java.util.List;
 import java.util.Scanner;
-import entities.Legajo;
 import service.EmpleadoServiceImpl;
 
 /**
@@ -14,12 +12,12 @@ import service.EmpleadoServiceImpl;
  * Responsabilidades:
  * - Capturar entrada del usuario desde consola (Scanner)
  * - Validar entrada básica (conversión de tipos, valores vacíos)
- * - Invocar servicios de negocio (PersonaService, DomicilioService)
+ * - Invocar servicios de negocio (EmpleadoService, LegajoService)
  * - Mostrar resultados y mensajes de error al usuario
- * - Coordinar operaciones complejas (crear persona con domicilio, etc.)
- *
+ * - Coordinar operaciones complejas (crear empleado con legajo, etc.)
  */
 public class MenuHandler {
+
     /**
      * Scanner compartido para leer entrada del usuario.
      * Inyectado desde AppMenu para evitar múltiples Scanners de System.in.
@@ -27,17 +25,19 @@ public class MenuHandler {
     private final Scanner scanner;
 
     /**
-     * Servicio de personas para operaciones CRUD.
-     * También proporciona acceso a DomicilioService mediante getDomicilioService().
+     * Servicio de empleados para operaciones CRUD.
      */
     private final EmpleadoServiceImpl empleadoService;
+
+    private static final String EMPLOYEE_LIST_HEADER = "Listando Empleados:";
+    private static final String EMPLOYEE_SEPARATOR = "-----------------";
 
     /**
      * Constructor con inyección de dependencias.
      * Valida que las dependencias no sean null (fail-fast).
      *
-     * @param scanner Scanner compartido para entrada de usuario
-     * @param personaService Servicio de personas
+     * @param scanner         Scanner compartido para entrada de usuario
+     * @param empleadoService Servicio de empleados
      * @throws IllegalArgumentException si alguna dependencia es null
      */
     public MenuHandler(Scanner scanner, EmpleadoServiceImpl empleadoService) {
@@ -45,74 +45,105 @@ public class MenuHandler {
             throw new IllegalArgumentException("Scanner no puede ser null");
         }
         if (empleadoService == null) {
-            throw new IllegalArgumentException("PersonaService no puede ser null");
+            throw new IllegalArgumentException("EmpleadoService no puede ser null");
         }
         this.scanner = scanner;
         this.empleadoService = empleadoService;
     }
 
     /**
-     * ACA VA "LOGICA" DE CADA OPCION
-    */
-    void crearEmpleado() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+     * Opción de menú: crear empleado.
+     * (Por ahora sin implementar).
+     */
+    public void crearEmpleado() {
+        throw new UnsupportedOperationException("Crear empleado aún no está implementado.");
     }
 
     /**
      * Muestra los empleados activos.
      */
-    void listarEmpleados() {
-
-        System.out.println("Listando Empleados:");
-
+    public void listarEmpleados() {
+        System.out.println(EMPLOYEE_LIST_HEADER);
         try {
-            
-            List<Empleado> empleados = empleadoService.getAll(); // Llamamos al servicio para obtener la lista
+            List<Empleado> empleados = empleadoService.getAll();
             if (empleados.isEmpty()) {
                 System.out.println("No hay empleados.");
-            } else {
-                for (Empleado emp : empleados) {  // Recorre la lista e imprime por consola cada uno
-                    System.out.println(emp.toString()); 
-                    System.out.println("-----------------");
-                }    
+                return;
             }
-
+            printEmpleados(empleados);
         } catch (Exception e) {
-            System.err.println("\nERROR: " + e.getMessage());
+            System.err.println("\nERROR al listar empleados: " + e.getMessage());
         }
     }
-    
 
-    void actualizarEmpleado() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private void printEmpleados(List<Empleado> empleados) {
+        for (Empleado empleado : empleados) {
+            System.out.println(empleado);
+            System.out.println(EMPLOYEE_SEPARATOR);
+        }
     }
 
-    void eliminarEmpleado() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: actualizar empleado.
+     * (Por ahora sin implementar).
+     */
+    public void actualizarEmpleado() {
+        throw new UnsupportedOperationException("Actualizar empleado aún no está implementado.");
     }
 
-    void buscarEmpleadoID() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: eliminar empleado.
+     * (Por ahora sin implementar).
+     */
+    public void eliminarEmpleado() {
+        throw new UnsupportedOperationException("Eliminar empleado aún no está implementado.");
     }
 
-    void crearLegajo() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: buscar empleado por ID (o DNI según se defina luego).
+     * (Por ahora sin implementar).
+     */
+    public void buscarEmpleadoID() {
+        throw new UnsupportedOperationException("Buscar empleado por ID aún no está implementado.");
     }
 
-    void listarLegajos() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: crear legajo.
+     * (Por ahora sin implementar).
+     */
+    public void crearLegajo() {
+        throw new UnsupportedOperationException("Crear legajo aún no está implementado.");
     }
 
-    void actualizarLegajo() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: listar legajos.
+     * (Por ahora sin implementar).
+     */
+    public void listarLegajos() {
+        throw new UnsupportedOperationException("Listar legajos aún no está implementado.");
     }
 
-    void eliminarLegajo() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: actualizar legajo.
+     * (Por ahora sin implementar).
+     */
+    public void actualizarLegajo() {
+        throw new UnsupportedOperationException("Actualizar legajo aún no está implementado.");
     }
 
-    void listarLegajoPorEstado() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    /**
+     * Opción de menú: eliminar legajo.
+     * (Por ahora sin implementar).
+     */
+    public void eliminarLegajo() {
+        throw new UnsupportedOperationException("Eliminar legajo aún no está implementado.");
     }
-    
+
+    /**
+     * Opción de menú: listar legajos por estado.
+     * (Por ahora sin implementar).
+     */
+    public void listarLegajoPorEstado() {
+        throw new UnsupportedOperationException("Listar legajos por estado aún no está implementado.");
+    }
 }

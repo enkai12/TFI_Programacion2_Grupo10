@@ -1,6 +1,5 @@
 package entities;
 
-// import java.util.Date; esto es antiguo -- usar localdate
 import java.time.LocalDate;
 
 /**
@@ -9,12 +8,12 @@ import java.time.LocalDate;
  *
  * Relación con Legajo: Asociación unidireccional 1 a 1. Empleado -> Legajo
  *
- * Tabla BD: empleado 
+ * Tabla BD: empleado
  * Campos:
  * - id: BIGINT AUTO_INCREMENT PRIMARY KEY (heredado de Base)
  * - eliminado: BOOLEAN DEFAULT FALSE (heredado de Base)
  * - nombre: VARCHAR(80) NOT NULL
- * - apellido: VARCHAR(80) NOT NULL  
+ * - apellido: VARCHAR(80) NOT NULL
  * - dni: VARCHAR(15) UNIQUE NOT NULL
  * - email: VARCHAR(120)
  * - fecha_ingreso: DATE
@@ -22,20 +21,27 @@ import java.time.LocalDate;
  */
 public class Empleado extends Base {
 
+    private static final String LEGAJO_NO_ASIGNADO = "No asignado";
+
     // Atributos propios
-    private String nombre; // obligatorio
-    private String apellido; // obligatorio
-    private String dni; // obligatorio, único e irrepetible
-    private String email; // opcional, único
-    // private Date fechaIngreso; // Inicio de la relación laboral -- lo cambio por esto:
+    private String nombre;    // obligatorio
+    private String apellido;  // obligatorio
+    private String dni;       // obligatorio, único e irrepetible
+    private String email;     // opcional, único
     private LocalDate fechaIngreso; // Inicio de la relación laboral
     private String area;
 
-    private Legajo legajo; // Asociación 1:1 unidireccional con Legajo
+    // Asociación 1:1 unidireccional con Legajo
+    private Legajo legajo;
 
     // Constructores
-    public Empleado(String nombre, String apellido, String dni, String email, 
-                   LocalDate fechaIngreso, String area, Legajo legajo) {
+    public Empleado(String nombre,
+                    String apellido,
+                    String dni,
+                    String email,
+                    LocalDate fechaIngreso,
+                    String area,
+                    Legajo legajo) {
         super(); // Llama al constructor de Base (id=0, eliminado=false)
         this.nombre = nombre;
         this.apellido = apellido;
@@ -83,9 +89,6 @@ public class Empleado extends Base {
         this.email = email;
     }
 
-    // public Date getFechaIngreso() {
-    //    return fechaIngreso;
-    // }
     public LocalDate getFechaIngreso() {
         return fechaIngreso;
     }
@@ -94,10 +97,6 @@ public class Empleado extends Base {
         this.fechaIngreso = fechaIngreso;
     }
 
-    //public void setFecha_ingreso(Date fechaIngreso) {
-    //    this.fechaIngreso = fechaIngreso;
-    //}
-    
     public String getArea() {
         return area;
     }
@@ -116,7 +115,7 @@ public class Empleado extends Base {
 
     @Override
     public void eliminarRegistro() { // Borrado lógico
-        super.setEliminado(true);
+        marcarEliminado();
     }
 
     @Override
@@ -129,7 +128,10 @@ public class Empleado extends Base {
                 + "\nFecha de Ingreso: " + getFechaIngreso()
                 + "\nArea: " + getArea()
                 + "\nEliminado: " + isEliminado()
-                + "\nLegajo: " + (getLegajo() != null ? getLegajo().toString() : "No asignado");
+                + "\nLegajo: " + buildLegajoDescription();
     }
 
+    private String buildLegajoDescription() {
+        return (legajo != null) ? legajo.toString() : LEGAJO_NO_ASIGNADO;
+    }
 }

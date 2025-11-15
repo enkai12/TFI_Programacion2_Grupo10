@@ -11,17 +11,28 @@ package entities;
  * Patrón de diseño: Template (clase base abstracta)
  */
 public abstract class Base {
-    
-    // Atributos compartidos por clases hijas
-    private long id = 0;                // Hacemos explicito que el tipo de dato long se inicializa en 0
-    private boolean eliminado = false;  // Por defecto el valor de eliminado es falso cuando estamos creando una entidad
 
-    
-    // Constructor explícito para que las clases hijas hereden los atributos
-    public Base() {
+    /**
+     * Identificador técnico de la entidad.
+     * Se espera que sea autogenerado por la capa de persistencia.
+     */
+    private long id;
+
+    /**
+     * Indica si la entidad fue eliminada de forma lógica (soft delete).
+     */
+    private boolean eliminado;
+
+    /**
+     * Constructor protegido para que solo las subclases puedan instanciarse.
+     * Deja que la capa de persistencia asigne el ID cuando corresponda.
+     */
+    protected Base() {
+        // Inicialización por defecto provista por Java (id = 0, eliminado = false)
     }
 
     // Getters y Setters
+
     public long getId() {
         return id;
     }
@@ -37,9 +48,21 @@ public abstract class Base {
     public void setEliminado(boolean eliminado) {
         this.eliminado = eliminado;
     }
-    
+
+    /**
+     * Marca la entidad como eliminada lógicamente.
+     * Método de utilidad para ser reutilizado por las subclases en eliminarRegistro().
+     */
+    protected final void marcarEliminado() {
+        this.eliminado = true;
+    }
+
     // Métodos abstractos
-    
+
+    /**
+     * Define cómo se realiza la eliminación lógica de la entidad.
+     * Las subclases deben implementar este método (por ejemplo,
+     * llamando a {@link #marcarEliminado()} y aplicando reglas específicas).
+     */
     public abstract void eliminarRegistro(); // Permitirá la eliminación lógica
-    
 }
