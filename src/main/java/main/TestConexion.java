@@ -6,22 +6,37 @@ import java.sql.SQLException;
 import config.DatabaseConnection;
 
 public class TestConexion {
-    public static void main(String[] args) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            if (conn != null) {
-                System.out.println("Conexion exitosa a la base de datos");
 
-                DatabaseMetaData metaData = conn.getMetaData();
-                System.out.println("Usuario conectado: " + metaData.getUserName());
-                System.out.println("Base de datos: " + conn.getCatalog());
-                System.out.println("URL: " + metaData.getURL());
-                System.out.println("Driver: " + metaData.getDriverName() + " v" + metaData.getDriverVersion());
+    private static final String MSG_CONNECTION_SUCCESS = "Conexion exitosa a la base de datos";
+    private static final String MSG_CONNECTION_FAILURE = "No se pudo establecer la conexion.";
+    private static final String MSG_ERROR_PREFIX = "Error al conectar a la base de datos: ";
+    private static final String LABEL_USER = "Usuario conectado: ";
+    private static final String LABEL_DATABASE = "Base de datos: ";
+    private static final String LABEL_URL = "URL: ";
+    private static final String LABEL_DRIVER = "Driver: ";
+
+    public static void main(String[] args) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            if (connection != null) {
+                System.out.println(MSG_CONNECTION_SUCCESS);
+                printConnectionInfo(connection);
             } else {
-                System.out.println("No se pudo establecer la conexion.");
+                System.out.println(MSG_CONNECTION_FAILURE);
             }
         } catch (SQLException e) {
-            System.err.println("Error al conectar a la base de datos: " + e.getMessage());
+            System.err.println(MSG_ERROR_PREFIX + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static void printConnectionInfo(Connection connection) throws SQLException {
+        DatabaseMetaData databaseMetaData = connection.getMetaData();
+        System.out.println(LABEL_USER + databaseMetaData.getUserName());
+        System.out.println(LABEL_DATABASE + connection.getCatalog());
+        System.out.println(LABEL_URL + databaseMetaData.getURL());
+        System.out.println(
+                LABEL_DRIVER + databaseMetaData.getDriverName() +
+                        " v" + databaseMetaData.getDriverVersion()
+        );
     }
 }
