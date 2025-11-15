@@ -116,10 +116,8 @@ public class AppMenu {
         // 1. Creamos los DAOs (Data Access Objects)
         EmpleadoDAO empleadoDAO = new EmpleadoDAO();
         LegajoDAO legajoDAO = new LegajoDAO();
-
         // 2. Creamos el servicio de Legajo
         LegajoServiceImpl legajoService = new LegajoServiceImpl(legajoDAO);
-
         // 3. Creamos y retornamos el servicio de Empleado
         return new EmpleadoServiceImpl(empleadoDAO, legajoService);
     }
