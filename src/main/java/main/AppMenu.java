@@ -9,30 +9,33 @@ import service.LegajoServiceImpl;
 
 public class AppMenu {
 
+    // --- Constantes ---
     private static final int EXIT_OPTION = 0;
     private static final String INVALID_INPUT_MESSAGE = "Entrada invalida. Por favor, ingrese un número.";
     private static final String INVALID_OPTION_MESSAGE = "Opción no válida.";
     private static final String EXIT_MESSAGE = "Saliendo...";
+    private static final String BUSINESS_RULE_ERROR_PREFIX = "\n[ERROR DE REGLA DE NEGOCIO]: ";
+    private static final String DATA_ERROR_PREFIX = "\n[ERROR DE DATOS]: ";
+    private static final String UNEXPECTED_ERROR_PREFIX = "\n[ERROR INESPERADO]: ";
+    private static final String PRESS_ENTER_TO_CONTINUE_MESSAGE = "\nPresione Enter para continuar...";
 
-    /**
-     * Scanner único compartido por toda la aplicación. IMPORTANTE: Solo debe
-     * haber UNA instancia de Scanner(System.in). Múltiples instancias causan
-     * problemas de buffering de entrada.
-     */
+    // --- Dependencias ---
     private final Scanner scanner;
-
-    /**
-     * Handler que ejecuta las operaciones del menú. Contiene toda la lógica de
-     * interacción con el usuario.
-     */
     private final MenuHandler menuHandler;
 
+    /**
+     * Constructor de AppMenu.
+     * Aquí se crean e inyectan todas las dependencias de la aplicación.
+     * Creamos cada DAO y Servicio UNA SOLA VEZ y los compartimos.
+     */
     public AppMenu() {
         this.scanner = new Scanner(System.in);
-        EmpleadoServiceImpl empleadoService = createEmpleadoService();
-        this.menuHandler = new MenuHandler(scanner, empleadoService);
+        this.menuHandler = initializeMenuHandler();
     }
 
+    /**
+     * Inicia el bucle principal de la aplicación.
+     */
     public void run() {
         boolean keepRunning = true;
         while (keepRunning) {
