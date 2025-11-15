@@ -59,8 +59,8 @@ public class TransactionManager implements AutoCloseable {
      * @throws SQLException si no hay transacción activa o ocurre un error al hacer commit.
      */
     public void commit() throws SQLException {
-        if (!transactionActive) {
-            throw new SQLException("No hay una transacción activa para hacer commit");
+        if (!isTransactionActive()) {
+            throw new SQLException(ERROR_NO_ACTIVE_TRANSACTION);
         }
         connection.commit();
         resetTransactionState();
@@ -72,15 +72,14 @@ public class TransactionManager implements AutoCloseable {
      * Cualquier excepción SQL se registra en stderr y no se propaga.
      */
     public void rollback() {
-        if (!hasActiveTransaction()) {
+        if (!isTransactionActive()) {
             return;
         }
-
         try {
             connection.rollback();
             resetTransactionState();
         } catch (SQLException e) {
-            System.err.println("Error durante el rollback: " + e.getMessage());
+            System.err.println(ERROR_ROLLBACK + e.getMessage());
         }
     }
 
@@ -96,13 +95,13 @@ public class TransactionManager implements AutoCloseable {
     @Override
     public void close() {
         try {
-            if (transactionActive) {
+            if (isTransactionActive()) {
                 rollback();
             }
             connection.setAutoCommit(true);
             connection.close();
         } catch (SQLException e) {
-            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+            System.err.println(ERROR_CLOSE_CONNECTION + e.getMessage());
         }
     }
 
