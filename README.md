@@ -30,9 +30,11 @@
  ┃ ┗ insert_data.sql           # Script con datos de prueba
  ┣ 📂 lib/                     # Librerías externas (.jar) agregadas al proyecto desde NetBeans
  ┣ 📂 img/                     # Diagramas y recursos visuales
- ┃ ┗ 📄 UML_Empleado_Legajo.png # Diagrama UML del dominio Empleado-Legajo
+ ┃ ┗ 📄 UML_Empleado_Legajo.png # Imagen del Diagrama UML del dominio Empleado-Legajo
+ ┣ 📂 docs/                    
+ ┃ ┣ 📄 Informe_TFI_Grupo10.pdf   # Informe final con análisis y conclusiones
+ ┃ ┗ 📄 Diagrama_TFI_Grupo10.uxf   # Diagrama UML para importar en UMLetino
  ┣ 📄 config.properties         # Configuración de conexión MySQL (usuario, contraseña, URL)
- ┣ 📄 Informe_TFI_Grupo10.pdf   # Informe final con análisis y conclusiones
  ┣ 📄 .gitignore                # Exclusiones de archivos y carpetas
  ┗ 📄 README.md                 # Archivo actual
 ```
