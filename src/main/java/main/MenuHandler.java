@@ -3,13 +3,14 @@ package main;
 import entities.Empleado;
 import entities.EstadoLegajo;
 import entities.Legajo;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
-
 import service.EmpleadoServiceImpl;
 import service.LegajoServiceImpl;
+import service.ServiceException;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Controlador de las operaciones del menú (Menu Handler).
@@ -30,27 +31,19 @@ public class MenuHandler {
 
     // Títulos / prompts reutilizables
     private static final String TITLE_CREAR_EMPLEADO_LEGAJO = "== Crear Empleado y Legajo ==";
-    private static final String TITLE_BUSCAR_EMPLEADO = "== Buscar empleado por ID ==";
+    private static final String TITLE_BUSCAR_EMPLEADO_ID = "== Buscar empleado por ID ==";
+    private static final String TITLE_BUSCAR_EMPLEADO_DNI = "== Buscar empleado por DNI ==";
     private static final String PROMPT_ID_EMPLEADO = "ID del empleado a buscar: ";
+    private static final String PROMPT_DNI_EMPLEADO = "DNI del empleado a buscar: ";
     private static final String INVALID_OPTION_STATE_MESSAGE = "Opción inválida. Intente nuevamente.\n";
+    private static final String INVALID_DATE_MESSAGE = "Formato de fecha incorrecto. Use AAAA-MM-DD.";
 
     // Constantes para operaciones no implementadas / reglas de negocio
-    private static final String ERROR_ACTUALIZAR_EMPLEADO_NOT_IMPLEMENTED =
-            "Actualizar empleado aún no está implementado.";
-    private static final String ERROR_ELIMINAR_EMPLEADO_NOT_IMPLEMENTED =
-            "Eliminar empleado aún no está implementado.";
-    private static final String ERROR_CREAR_LEGAJO_NOT_SUPPORTED =
-            "Crear legajo directamente está deshabilitado; debe crearse junto con un Empleado.";
-    private static final String ERROR_ACTUALIZAR_LEGAJO_NOT_IMPLEMENTED =
-            "Actualizar legajo aún no está implementado.";
-    private static final String ERROR_ELIMINAR_LEGAJO_NOT_SUPPORTED =
-            "Eliminar legajo directamente está deshabilitado; debe eliminarse desde el Empleado.";
-    private static final String ERROR_LISTAR_LEGAJOS_POR_ESTADO_NOT_IMPLEMENTED =
-            "Listar legajos por estado aún no está implementado.";
+    private static final String ERROR_CREAR_LEGAJO_NOT_SUPPORTED = "Crear legajo directamente está deshabilitado; debe crearse junto con un Empleado.";
+    private static final String ERROR_ELIMINAR_LEGAJO_NOT_SUPPORTED = "Eliminar legajo directamente está deshabilitado; debe eliminarse desde el Empleado.";
 
     /**
      * Constructor con inyección de dependencias (DI).
-     * Recibe los servicios que necesita para operar.
      */
     public MenuHandler(Scanner scanner,
                        EmpleadoServiceImpl empleadoService,
@@ -71,105 +64,329 @@ public class MenuHandler {
 
     // --- MÉTODOS DE EMPLEADO ---
 
-    /**
-     * Pide datos al usuario para crear un Empleado y su Legajo.
-     * Lanza excepciones si la validación falla; AppMenu las captura.
-     */
-    public void crearEmpleado() throws Exception {
+    public void crearEmpleado() throws ServiceException {
         System.out.println(TITLE_CREAR_EMPLEADO_LEGAJO);
-        Empleado empleadoNuevo = readEmpleadoWithLegajoFromInput();
-        empleadoService.insertar(empleadoNuevo);
-        System.out.println("\n¡Empleado creado exitosamente!");
+        try {
+            Empleado empleadoNuevo = readEmpleadoWithLegajoFromInput();
+            empleadoService.insertar(empleadoNuevo); // Llama al servicio
+            System.out.println("\n¡Empleado creado exitosamente!");
+        } catch (DateTimeParseException e) {
+            // Error específico al escribir la fecha
+            throw new IllegalArgumentException(INVALID_DATE_MESSAGE);
+        } catch (Exception e) {
+            // Cualquier otro error del servicio
+            throw new ServiceException("Error al crear empleado: " + e.getMessage(), e);
+        }
     }
 
-    public void listarEmpleados() throws Exception {
-        List<Empleado> empleados = empleadoService.getAll();
-        printList(EMPLOYEE_LIST_HEADER, NO_EMPLOYEES_FOUND, empleados);
+    public void listarEmpleados() throws ServiceException {
+        try {
+            List<Empleado> empleados = empleadoService.getAll();
+            printList(EMPLOYEE_LIST_HEADER, NO_EMPLOYEES_FOUND, empleados);
+        } catch (Exception e) {
+            throw new ServiceException("Error al listar empleados: " + e.getMessage(), e);
+        }
     }
 
-    public void actualizarEmpleado() {
-        throw new UnsupportedOperationException(ERROR_ACTUALIZAR_EMPLEADO_NOT_IMPLEMENTED);
-    }
-
-    public void eliminarEmpleado() {
-        throw new UnsupportedOperationException(ERROR_ELIMINAR_EMPLEADO_NOT_IMPLEMENTED);
-    }
-
-    /**
-     * Busca un empleado por ID. Las excepciones (NumberFormatException,
-     * IllegalArgumentException, etc.) son propagadas a AppMenu.
-     */
-    public void buscarEmpleadoID() throws Exception {
-        System.out.println(TITLE_BUSCAR_EMPLEADO);
+    public void actualizarEmpleado() throws ServiceException {
+        System.out.println("== Actualizar Empleado ==");
         long id = readEmpleadoIdFromInput();
-        Empleado empleado = empleadoService.getById(id);
-        System.out.println("Empleado encontrado:");
-        System.out.println(empleado);
+
+        try {
+            Empleado empleado = empleadoService.getById(id);
+            if (empleado == null) {
+                throw new ServiceException("No se encontró ningún empleado con el ID: " + id);
+            }
+            if (empleado.getLegajo() == null) {
+                throw new ServiceException("Error de datos: El empleado no tiene un legajo asociado para actualizar.");
+            }
+
+            System.out.println("\nEditando datos del empleado. Deje el campo en blanco para no modificar.");
+
+            // Read updated Empleado fields
+            System.out.print("Nombre [" + empleado.getNombre() + "]: ");
+            String nombre = scanner.nextLine().trim();
+            if (!nombre.isEmpty()) empleado.setNombre(nombre);
+
+            System.out.print("Apellido [" + empleado.getApellido() + "]: ");
+            String apellido = scanner.nextLine().trim();
+            if (!apellido.isEmpty()) empleado.setApellido(apellido);
+
+            while (true) {
+                System.out.print("DNI [" + empleado.getDni() + "]: ");
+                String dni = scanner.nextLine().trim();
+                if (dni.isEmpty()) {
+                    break; // No se modifica
+                }
+                if (esDniValido(dni)) {
+                    empleado.setDni(dni);
+                    break;
+                }
+                System.out.println("DNI inválido. Debe contener solo números. Intente de nuevo.");
+            }
+
+            while (true) {
+                System.out.print("Email [" + empleado.getEmail() + "]: ");
+                String email = scanner.nextLine().trim();
+                if (email.isEmpty()) {
+                    break; // No se modifica
+                }
+                if (esEmailValido(email)) {
+                    empleado.setEmail(email);
+                    break;
+                }
+                System.out.println("Email inválido. Formato esperado: usuario@dominio.com. Intente de nuevo.");
+            }
+
+            System.out.print("Área [" + empleado.getArea() + "]: ");
+            String area = scanner.nextLine().trim();
+            if (!area.isEmpty()) empleado.setArea(area);
+
+            System.out.print("Fecha de Ingreso (AAAA-MM-DD) [" + empleado.getFechaIngreso() + "]: ");
+            String fechaIngresoStr = scanner.nextLine().trim();
+            if (!fechaIngresoStr.isEmpty()) {
+                try {
+                    empleado.setFechaIngreso(LocalDate.parse(fechaIngresoStr));
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException(INVALID_DATE_MESSAGE);
+                }
+            }
+
+            System.out.println("\n--- Editando datos del Legajo ---");
+            Legajo legajo = empleado.getLegajo();
+
+            System.out.print("Número de Legajo [" + legajo.getNumeroLegajo() + "]: ");
+            String numeroLegajo = scanner.nextLine().trim();
+            if (!numeroLegajo.isEmpty()) legajo.setNumeroLegajo(numeroLegajo);
+
+            System.out.print("Categoría [" + legajo.getCategoria() + "]: ");
+            String categoria = scanner.nextLine().trim();
+            if (!categoria.isEmpty()) legajo.setCategoria(categoria);
+
+            System.out.println("Estado del legajo [" + legajo.getEstado() + "]:");
+            System.out.println("  1 - ACTIVO");
+            System.out.println("  2 - INACTIVO");
+            System.out.print("Opción (deje en blanco para no cambiar): ");
+            String estadoOpt = scanner.nextLine().trim();
+            if (!estadoOpt.isEmpty()) {
+                switch (estadoOpt) {
+                    case "1":
+                        legajo.setEstado(EstadoLegajo.ACTIVO);
+                        break;
+                    case "2":
+                        legajo.setEstado(EstadoLegajo.INACTIVO);
+                        break;
+                    default:
+                        System.out.println("Opción de estado no válida. No se cambiará.");
+                }
+            }
+
+            System.out.print("Observaciones [" + legajo.getObservaciones() + "]: ");
+            String observaciones = scanner.nextLine().trim();
+            if (!observaciones.isEmpty()) legajo.setObservaciones(observaciones);
+
+            System.out.print("Fecha de Alta (AAAA-MM-DD) [" + legajo.getFechaAlta() + "]: ");
+            String fechaAltaStr = scanner.nextLine().trim();
+            if (!fechaAltaStr.isEmpty()) {
+                try {
+                    legajo.setFechaAlta(LocalDate.parse(fechaAltaStr));
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException(INVALID_DATE_MESSAGE);
+                }
+            }
+
+            empleadoService.actualizar(empleado);
+            System.out.println("\n¡Empleado actualizado exitosamente!");
+
+        } catch (Exception e) {
+            throw new ServiceException("Error al actualizar empleado: " + e.getMessage(), e);
+        }
+    }
+
+    public void eliminarEmpleado() throws ServiceException {
+        System.out.println("== Eliminar Empleado ==");
+        long id = readEmpleadoIdFromInput(); // re-uses existing helper
+        try {
+            empleadoService.eliminar(id);
+            System.out.println("\nEmpleado con ID " + id + " eliminado exitosamente (junto con su legajo).");
+        } catch (Exception e) {
+            throw new ServiceException("Error al eliminar empleado: " + e.getMessage(), e);
+        }
+    }
+
+    public void buscarEmpleadoID() throws ServiceException {
+        System.out.println(TITLE_BUSCAR_EMPLEADO_ID);
+        // readEmpleadoIdFromInput ya maneja NumberFormatException
+        long id = readEmpleadoIdFromInput();
+        try {
+            Empleado empleado = empleadoService.getById(id);
+            if (empleado == null) {
+                throw new ServiceException("No se encontró ningún empleado con el ID: " + id);
+            }
+            System.out.println("Empleado encontrado:");
+            System.out.println(empleado);
+        } catch (Exception e) {
+            throw new ServiceException("Error al buscar empleado por ID: " + e.getMessage(), e);
+        }
+    }
+
+    public void buscarEmpleadoPorDNI() throws ServiceException {
+        System.out.println(TITLE_BUSCAR_EMPLEADO_DNI);
+        System.out.print(PROMPT_DNI_EMPLEADO);
+        String dni = scanner.nextLine().trim();
+        try {
+            // Nota: getByDni no está en la interfaz GenericService, es específico de Empleado.
+            Empleado empleado = empleadoService.getByDni(dni);
+            if (empleado == null) {
+                throw new ServiceException("No se encontró ningún empleado con el DNI: " + dni);
+            }
+            System.out.println("\nEmpleado encontrado:");
+            System.out.println(empleado);
+        } catch (Exception e) {
+            throw new ServiceException("Error al buscar empleado por DNI: " + e.getMessage(), e);
+        }
     }
 
     // --- MÉTODOS DE LEGAJO ---
 
-    /**
-     * Intenta crear un legajo solo.
-     * Está deshabilitado por regla de negocio (Legajo se crea junto con Empleado).
-     */
-    public void crearLegajo() throws Exception {
+    public void crearLegajo() {
         throw new UnsupportedOperationException(ERROR_CREAR_LEGAJO_NOT_SUPPORTED);
     }
 
-    /**
-     * Muestra todos los legajos activos.
-     */
-    public void listarLegajos() throws Exception {
-        List<Legajo> legajos = legajoService.getAll();
-        printList(LEGAJO_LIST_HEADER, NO_LEGAJOS_FOUND, legajos);
+    public void listarLegajos() throws ServiceException {
+        try {
+            List<Legajo> legajos = legajoService.getAll();
+            printList(LEGAJO_LIST_HEADER, NO_LEGAJOS_FOUND, legajos);
+        } catch (Exception e) {
+            throw new ServiceException("Error al listar legajos: " + e.getMessage(), e);
+        }
     }
 
-    public void actualizarLegajo() {
-        throw new UnsupportedOperationException(ERROR_ACTUALIZAR_LEGAJO_NOT_IMPLEMENTED);
+    public void actualizarLegajo() throws ServiceException {
+        System.out.println("== Actualizar Legajo ==");
+        System.out.print("ID del legajo a actualizar: ");
+        String idStr = scanner.nextLine().trim();
+        long id;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El ID debe ser un número válido.");
+        }
+
+        try {
+            Legajo legajo = legajoService.getById(id);
+            if (legajo == null) {
+                throw new ServiceException("No se encontró ningún legajo con el ID: " + id);
+            }
+
+            System.out.println("\nEditando datos del legajo. Deje el campo en blanco para no modificar.");
+
+            System.out.print("Número de Legajo [" + legajo.getNumeroLegajo() + "]: ");
+            String numeroLegajo = scanner.nextLine().trim();
+            if (!numeroLegajo.isEmpty()) legajo.setNumeroLegajo(numeroLegajo);
+
+            System.out.print("Categoría [" + legajo.getCategoria() + "]: ");
+            String categoria = scanner.nextLine().trim();
+            if (!categoria.isEmpty()) legajo.setCategoria(categoria);
+
+            System.out.println("Estado del legajo [" + legajo.getEstado() + "]:");
+            System.out.println("  1 - ACTIVO");
+            System.out.println("  2 - INACTIVO");
+            System.out.print("Opción (deje en blanco para no cambiar): ");
+            String estadoOpt = scanner.nextLine().trim();
+            if (!estadoOpt.isEmpty()) {
+                switch (estadoOpt) {
+                    case "1":
+                        legajo.setEstado(EstadoLegajo.ACTIVO);
+                        break;
+                    case "2":
+                        legajo.setEstado(EstadoLegajo.INACTIVO);
+                        break;
+                    default:
+                        System.out.println("Opción de estado no válida. No se cambiará.");
+                }
+            }
+
+            System.out.print("Observaciones [" + legajo.getObservaciones() + "]: ");
+            String observaciones = scanner.nextLine().trim();
+            if (!observaciones.isEmpty()) legajo.setObservaciones(observaciones);
+
+            System.out.print("Fecha de Alta (AAAA-MM-DD) [" + legajo.getFechaAlta() + "]: ");
+            String fechaAltaStr = scanner.nextLine().trim();
+            if (!fechaAltaStr.isEmpty()) {
+                try {
+                    legajo.setFechaAlta(LocalDate.parse(fechaAltaStr));
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException(INVALID_DATE_MESSAGE);
+                }
+            }
+
+            legajoService.actualizar(legajo);
+            System.out.println("\n¡Legajo actualizado exitosamente!");
+
+        } catch (Exception e) {
+            throw new ServiceException("Error al actualizar legajo: " + e.getMessage(), e);
+        }
     }
 
-    /**
-     * Intenta eliminar un legajo solo.
-     * Está deshabilitado por regla de negocio (se elimina desde Empleado).
-     */
-    public void eliminarLegajo() throws Exception {
+    public void eliminarLegajo() {
         throw new UnsupportedOperationException(ERROR_ELIMINAR_LEGAJO_NOT_SUPPORTED);
     }
 
-    public void listarLegajoPorEstado() {
-        throw new UnsupportedOperationException(ERROR_LISTAR_LEGAJOS_POR_ESTADO_NOT_IMPLEMENTED);
+    public void listarLegajoPorEstado() throws ServiceException {
+        System.out.println("== Listar Legajos por Estado ==");
+        EstadoLegajo estado = leerEstadoLegajo(); // Re-use existing helper
+        try {
+            List<Legajo> legajos = legajoService.getByEstado(estado);
+            printList("--- Listando Legajos con estado " + estado + " ---",
+                    "No se encontraron legajos con el estado " + estado + ".",
+                    legajos);
+        } catch (Exception e) {
+            throw new ServiceException("Error al listar legajos por estado: " + e.getMessage(), e);
+        }
     }
 
     // --- Helpers privados (entrada de datos) ---
 
     /**
-     * Lee desde consola todos los datos necesarios para construir
-     * un Empleado con su Legajo asociado.
+     * Lee desde consola los datos para un Empleado y Legajo.
+     * Lanza DateTimeParseException si las fechas son incorrectas.
      */
-    private Empleado readEmpleadoWithLegajoFromInput() {
-        // Datos de Empleado
+    private Empleado readEmpleadoWithLegajoFromInput() throws DateTimeParseException {
         System.out.print("Nombre: ");
         String nombre = scanner.nextLine().trim();
 
         System.out.print("Apellido: ");
         String apellido = scanner.nextLine().trim();
 
-        System.out.print("DNI: ");
-        String dni = scanner.nextLine().trim();
+        String dni;
+        while (true) {
+            System.out.print("DNI: ");
+            dni = scanner.nextLine().trim();
+            if (esDniValido(dni)) {
+                break;
+            }
+            System.out.println("DNI inválido. Debe contener solo números. Intente de nuevo.");
+        }
 
-        System.out.print("Email: ");
-        String email = scanner.nextLine().trim();
+        String email;
+        while (true) {
+            System.out.print("Email: ");
+            email = scanner.nextLine().trim();
+            if (esEmailValido(email)) {
+                break;
+            }
+            System.out.println("Email inválido. Formato esperado: usuario@dominio.com. Intente de nuevo.");
+        }
 
         System.out.print("Área: ");
         String area = scanner.nextLine().trim();
 
         System.out.print("Fecha de Ingreso (AAAA-MM-DD): ");
-        LocalDate fechaIngreso = LocalDate.parse(scanner.nextLine());
+        LocalDate fechaIngreso = LocalDate.parse(scanner.nextLine()); // Puede lanzar DateTimeParseException
 
         System.out.println("\n--- Datos del Legajo (Requerido) ---");
 
-        // Datos de Legajo
         System.out.print("Número de Legajo: ");
         String numeroLegajo = scanner.nextLine().trim();
 
@@ -182,7 +399,7 @@ public class MenuHandler {
         String observaciones = scanner.nextLine().trim();
 
         System.out.print("Fecha de Alta (AAAA-MM-DD): ");
-        LocalDate fechaAlta = LocalDate.parse(scanner.nextLine());
+        LocalDate fechaAlta = LocalDate.parse(scanner.nextLine()); // Puede lanzar DateTimeParseException
 
         Legajo legajoNuevo = new Legajo(numeroLegajo, categoria, estado, fechaAlta, observaciones);
         return new Empleado(nombre, apellido, dni, email, fechaIngreso, area, legajoNuevo);
@@ -190,12 +407,17 @@ public class MenuHandler {
 
     /**
      * Helper para leer y validar el ID de empleado desde consola.
+     * Lanza IllegalArgumentException si no es un número.
      */
     private long readEmpleadoIdFromInput() {
         System.out.print(PROMPT_ID_EMPLEADO);
         String input = scanner.nextLine();
-        // NumberFormatException (IllegalArgumentException) se propaga a AppMenu
-        return Long.parseLong(input);
+        try {
+            return Long.parseLong(input);
+        } catch (NumberFormatException e) {
+            // Esto será capturado por el catch (IllegalArgumentException e) en AppMenu
+            throw new IllegalArgumentException("El ID debe ser un número válido.");
+        }
     }
 
     /**
@@ -223,9 +445,6 @@ public class MenuHandler {
 
     // --- Helpers privados (presentación) ---
 
-    /**
-     * Imprime una lista de elementos con encabezado, mensaje de lista vacía y separador.
-     */
     private void printList(String header, String emptyMessage, List<?> items) {
         System.out.println(header);
         if (items == null || items.isEmpty()) {
@@ -236,5 +455,20 @@ public class MenuHandler {
             System.out.println(item); // Asume que .toString() está bien formateado
             System.out.println(SEPARATOR);
         }
+    }
+
+    // --- Helpers privados (validación) ---
+
+    private boolean esDniValido(String dni) {
+        return dni != null && !dni.trim().isEmpty() && dni.matches("\\d+");
+    }
+
+    private boolean esEmailValido(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        // Regex simple para validación de email
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return email.matches(emailRegex);
     }
 }

@@ -1,6 +1,7 @@
 package service;
 
 import dao.LegajoDAO;
+import entities.EstadoLegajo;
 import entities.Legajo;
 
 import java.sql.Connection;
@@ -148,6 +149,19 @@ public class LegajoServiceImpl implements GenericService<Legajo> {
     @Override
     public List<Legajo> getAll() throws Exception {
         return legajoDAO.leerTodos();
+    }
+
+    /**
+     * Obtiene todos los legajos que coinciden con un estado específico.
+     * @param estado El estado a buscar.
+     * @return Lista de legajos.
+     * @throws Exception Si el estado es null o hay un error de BD.
+     */
+    public List<Legajo> getByEstado(EstadoLegajo estado) throws Exception {
+        if (estado == null) {
+            throw new IllegalArgumentException("El estado no puede ser null.");
+        }
+        return legajoDAO.buscarPorEstado(estado);
     }
 
     // --- Métodos Privados de Validación ---
