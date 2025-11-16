@@ -1,6 +1,5 @@
 package config;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -29,7 +28,10 @@ public class DatabaseConnection {
     // esto se ejecuta una sola vez cuando la app arranca
     // así no leemos el archivo a cada rato
     static {
-        try (InputStream input = new FileInputStream(CONFIG_FILE_NAME)) {
+        try (InputStream input = DatabaseConnection.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
+            if (input == null) {
+                throw new IOException("No se pudo encontrar el archivo de configuración: " + CONFIG_FILE_NAME);
+            }
             loadProperties(input);
             loadJdbcDriver();
             DB_URL = buildDatabaseUrl();

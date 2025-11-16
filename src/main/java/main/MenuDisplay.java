@@ -20,11 +20,8 @@ public final class MenuDisplay {
     private static final String OPTION_6_BUSCAR_EMPLEADO_DNI = "6. Buscar Empleado por DNI";
 
     // Opciones de Legajo (Re-numeradas)
-    private static final String OPTION_7_CREAR_LEGAJO = "7. Crear Legajo";
-    private static final String OPTION_8_LISTAR_LEGAJOS = "8. Listar Legajos";
-    private static final String OPTION_9_ACTUALIZAR_LEGAJO = "9. Actualizar Legajo";
-    private static final String OPTION_10_ELIMINAR_LEGAJO = "10. Eliminar Legajo";
-    private static final String OPTION_11_LISTAR_LEGAJOS_POR_ESTADO = "11. Listar Legajos por Estado";
+    private static final String OPTION_7_LISTAR_LEGAJOS = "7. Listar Legajos";
+    private static final String OPTION_8_LISTAR_LEGAJOS_POR_ESTADO = "8. Listar Legajos por Estado";
 
     private static final String OPTION_0_SALIR = "0. Salir";
     private static final String PROMPT_MESSAGE = "Ingrese una opcion: ";
@@ -72,11 +69,8 @@ public final class MenuDisplay {
 
     private static void printLegajoOptions(java.io.PrintStream out) {
         out.println(SEPARATOR_LEGAJO);
-        out.println(OPTION_7_CREAR_LEGAJO);
-        out.println(OPTION_8_LISTAR_LEGAJOS);
-        out.println(OPTION_9_ACTUALIZAR_LEGAJO);
-        out.println(OPTION_10_ELIMINAR_LEGAJO);
-        out.println(OPTION_11_LISTAR_LEGAJOS_POR_ESTADO);
+        out.println(OPTION_7_LISTAR_LEGAJOS);
+        out.println(OPTION_8_LISTAR_LEGAJOS_POR_ESTADO);
     }
 
     private static void printExitOption(java.io.PrintStream out) {

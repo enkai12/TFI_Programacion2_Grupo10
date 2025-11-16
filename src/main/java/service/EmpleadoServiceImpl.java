@@ -1,10 +1,10 @@
 package service;
 
+import config.DatabaseConnection;
+import config.TransactionManager;
 import dao.EmpleadoDAO;
 import entities.Empleado;
 import entities.Legajo;
-import config.DatabaseConnection;
-import config.TransactionManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,6 +32,9 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
     private final EmpleadoDAO empleadoDAO;
     private final LegajoServiceImpl legajoService;
 
+    private static final String DNI_REGEX = "\\d+";
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+
     /**
      * constructor con inyección de dependencias
      */
@@ -49,7 +52,6 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
     @Override
     public void insertar(Empleado empleado) throws Exception {
         validateEmpleado(empleado);
-        validateDniUnique(empleado.getDni(), null);
 
         if (empleado.getLegajo() == null) {
             throw new IllegalArgumentException("Un Empleado debe ser creado con un Legajo.");
@@ -68,9 +70,13 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
             legajoService.insertarTx(legajo, empleado.getId(), conn);
 
             txManager.commit();
+        } catch (SQLException e) {
+            // El rollback se maneja en el close() del TransactionManager.
+            // El nuevo método handleSqlException se encargará de la lógica.
+            handleSqlException(e);
         } catch (Exception e) {
             // El rollback se maneja en el close() del TransactionManager
-            throw new Exception("Error al crear empleado: ".concat(e.getMessage()), e);
+            throw new ServiceException("Error al crear empleado: " + e.getMessage(), e);
         }
     }
 
@@ -86,19 +92,21 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
         }
 
         validateEmpleado(empleado); // Valida Nombre, Apellido, DNI
-        validateDniUnique(empleado.getDni(), empleado.getId()); // Para que la validación de DNI no falle consigo mismo
 
         try (TransactionManager txManager = new TransactionManager(DatabaseConnection.getConnection())) {
             txManager.startTransaction();
             Connection conn = txManager.getConnection();
 
             legajoService.actualizarTx(empleado.getLegajo(), conn); // Actualiza legajo
-            empleadoDAO.actualizarTx(empleado, conn);               // Actualiza empleado
+            empleadoDAO.actualizarTx(empleado, conn); // Actualiza empleado
 
             txManager.commit();
+        } catch (SQLException e) {
+            // El rollback se maneja en el close() del TransactionManager.
+            handleSqlException(e);
         } catch (Exception e) {
             // El rollback se maneja en el close() del TransactionManager
-            throw new Exception("Error al actualizar empleado: ".concat(e.getMessage()), e);
+            throw new ServiceException("Error al actualizar empleado: " + e.getMessage(), e);
         }
     }
 
@@ -109,7 +117,8 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
             throw new IllegalArgumentException("El ID para eliminar debe ser mayor a 0.");
         }
 
-        // Buscamos al empleado para asegurarnos de que existe y obtener el ID de su legajo.
+        // Buscamos al empleado para asegurarnos de que existe y obtener el ID de su
+        // legajo.
         Empleado empleado = empleadoDAO.leer(id);
         if (empleado == null) {
             throw new IllegalArgumentException("No se encontró un empleado (activo) con el ID: " + id);
@@ -125,12 +134,12 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
             Connection conn = txManager.getConnection();
 
             legajoService.eliminarTx(legajoId, conn); // Primero se elimina el Legajo
-            empleadoDAO.eliminarTx(id, conn);         // Luego se elimina a Empleado
+            empleadoDAO.eliminarTx(id, conn); // Luego se elimina a Empleado
 
             txManager.commit();
         } catch (Exception e) {
             // El rollback se maneja en el close() del TransactionManager
-            throw new Exception("Error al eliminar empleado: ".concat(e.getMessage()), e);
+            throw new ServiceException("Error al eliminar empleado: " + e.getMessage(), e);
         }
     }
 
@@ -167,17 +176,42 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
         if (empleado.getDni() == null || empleado.getDni().trim().isEmpty()) {
             throw new IllegalArgumentException("El DNI no puede estar vacío");
         }
+        if (!empleado.getDni().matches(DNI_REGEX)) {
+            throw new IllegalArgumentException("DNI inválido. Debe contener solo números.");
+        }
+
+        // El email es opcional, pero si se provee, debe ser válido
+        if (empleado.getEmail() != null && !empleado.getEmail().trim().isEmpty()) {
+            if (!empleado.getEmail().matches(EMAIL_REGEX)) {
+                throw new IllegalArgumentException("Email inválido. Formato esperado: usuario@dominio.com.");
+            }
+        }
     }
 
-    private void validateDniUnique(String dni, Long empleadoId) throws Exception {
-        Empleado existente = empleadoDAO.buscarPorDni(dni);
-        if (existente != null) {
-            // Existe una persona con ese DNI
-            if (empleadoId == null || existente.getId() != empleadoId) {
-                // Es INSERT (personaId == null) o es UPDATE pero el DNI pertenece a otra persona
-                throw new IllegalArgumentException("Ya existe una persona con el DNI: " + dni);
+    /**
+     * Centraliza el manejo de SQLExceptions para convertirlas en ServiceExceptions
+     * con mensajes claros, especialmente para violaciones de constraints.
+     *
+     * @param e La SQLException capturada.
+     * @throws ServiceException La excepción de negocio correspondiente.
+     */
+    private void handleSqlException(SQLException e) throws ServiceException {
+        // El código de estado '23000' es el estándar SQL para violación de restricción de integridad.
+        if ("23000".equals(e.getSQLState())) {
+            String message = e.getMessage().toLowerCase();
+            if (message.contains("uq_empleado_dni")) {
+                throw new ServiceException("Error: El DNI ya está en uso por otro empleado.", e);
             }
-            // Si llegamos aquí: es UPDATE y el DNI pertenece a la misma persona → OK
+            if (message.contains("uq_empleado_email")) {
+                throw new ServiceException("Error: El email ya está en uso por otro empleado.", e);
+            }
+            if (message.contains("uq_legajo_nro_legajo")) {
+                throw new ServiceException("Error: El número de legajo ya está en uso.", e);
+            }
+            // Mensaje genérico si no podemos identificar la constraint específica
+            throw new ServiceException("Error: Se ha violado una restricción de datos únicos (DNI, email o Nro. de Legajo ya existen).", e);
         }
+        // Para otros errores SQL, lanzamos una excepción genérica.
+        throw new ServiceException("Error de base de datos inesperado.", e);
     }
 }

@@ -85,11 +85,8 @@ public class AppMenu {
             case 6 -> () -> menuHandler.buscarEmpleadoPorDNI();
 
             // Opciones de Legajo (Re-numeradas)
-            case 7 -> () -> menuHandler.crearLegajo();
-            case 8 -> () -> menuHandler.listarLegajos();
-            case 9 -> () -> menuHandler.actualizarLegajo();
-            case 10 -> () -> menuHandler.eliminarLegajo();
-            case 11 -> () -> menuHandler.listarLegajoPorEstado();
+            case 7 -> () -> menuHandler.listarLegajos();
+            case 8 -> () -> menuHandler.listarLegajoPorEstado();
 
             default -> null; // Opción no válida
         };
