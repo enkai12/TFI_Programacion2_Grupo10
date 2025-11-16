@@ -158,6 +158,13 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
         return empleadoDAO.leerTodos();
     }
 
+    public Empleado getByDni(String dni) throws Exception {
+        if (dni == null || dni.trim().isEmpty()) {
+            throw new IllegalArgumentException("El DNI no puede estar vacío.");
+        }
+        return empleadoDAO.buscarPorDni(dni);
+    }
+
     private void validateEmpleado(Empleado empleado) {
         if (empleado == null) {
             throw new IllegalArgumentException("La persona no puede ser null");

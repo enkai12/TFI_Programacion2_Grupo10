@@ -77,6 +77,12 @@ public class LegajoDAO implements GenericDAO<Legajo> {
     private static final String SELECT_BY_NRO_LEGAJO_SQL =
             "SELECT * FROM legajo WHERE nro_legajo = ? AND eliminado = FALSE";
 
+    /**
+     * SQL para buscar Legajos por 'estado'.
+     */
+    private static final String SELECT_BY_ESTADO_SQL =
+            "SELECT * FROM legajo WHERE estado = ? AND eliminado = FALSE";
+
     // --- IMPLEMENTACIÓN DE MÉTODOS GENÉRICOS (GenericDAO) ---
 
     /**
@@ -195,6 +201,33 @@ public class LegajoDAO implements GenericDAO<Legajo> {
             }
         }
         return null;
+    }
+
+    /**
+     * Busca Legajos por su estado (ACTIVO/INACTIVO).
+     *
+     * @param estado El estado a buscar.
+     * @return Una lista de Legajos que coinciden (puede estar vacía).
+     * @throws SQLException Si hay un error de base de datos.
+     */
+    public List<Legajo> buscarPorEstado(EstadoLegajo estado) throws SQLException {
+        List<Legajo> legajos = new ArrayList<>();
+        if (estado == null) {
+            return legajos;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ESTADO_SQL)) {
+
+            stmt.setString(1, estado.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    legajos.add(mapRowToLegajo(rs));
+                }
+            }
+        }
+        return legajos;
     }
 
     // --- MÉTODOS AUXILIARES (Helpers) ---

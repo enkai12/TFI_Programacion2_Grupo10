@@ -1,17 +1,22 @@
 package main;
 
 import java.util.Scanner;
-
 import dao.EmpleadoDAO;
 import dao.LegajoDAO;
 import service.EmpleadoServiceImpl;
 import service.LegajoServiceImpl;
+import service.ServiceException; // Importamos la clase de excepción
 
+/**
+ * Orquestador principal de la aplicación.
+ * Controla el bucle del menú, la inicialización de dependencias
+ * y el manejo centralizado de errores.
+ */
 public class AppMenu {
 
     // --- Constantes ---
     private static final int EXIT_OPTION = 0;
-    private static final String INVALID_INPUT_MESSAGE = "Entrada invalida. Por favor, ingrese un número.";
+    private static final String INVALID_INPUT_MESSAGE = "Entrada inválida. Por favor, ingrese un número.";
     private static final String INVALID_OPTION_MESSAGE = "Opción no válida.";
     private static final String EXIT_MESSAGE = "Saliendo...";
     private static final String BUSINESS_RULE_ERROR_PREFIX = "\n[ERROR DE REGLA DE NEGOCIO]: ";
@@ -26,7 +31,6 @@ public class AppMenu {
     /**
      * Constructor de AppMenu.
      * Aquí se crean e inyectan todas las dependencias de la aplicación.
-     * Creamos cada DAO y Servicio UNA SOLA VEZ y los compartimos.
      */
     public AppMenu() {
         this.scanner = new Scanner(System.in);
@@ -51,13 +55,13 @@ public class AppMenu {
      * Muestra el menú principal y lee la opción del usuario.
      */
     private Integer readMenuOption() {
-        MenuDisplay.mostrarMenuPrincipal(); // Asumimos que esta clase existe
+        MenuDisplay.mostrarMenuPrincipal(); // Llama al menú corregido
         String input = scanner.nextLine();
         try {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
             System.out.println(INVALID_INPUT_MESSAGE);
-            return null;
+            return null; // Devuelve null para que el bucle principal ignore esta entrada
         }
     }
 
@@ -67,9 +71,10 @@ public class AppMenu {
     private boolean handleMenuOption(int option) {
         if (option == EXIT_OPTION) {
             System.out.println(EXIT_MESSAGE);
-            return false;
+            return false; // Termina el bucle
         }
 
+        // Interfaz funcional para ejecutar la acción correspondiente
         MenuAction action = switch (option) {
             // Opciones de Empleado
             case 1 -> () -> menuHandler.crearEmpleado();
@@ -77,24 +82,25 @@ public class AppMenu {
             case 3 -> () -> menuHandler.actualizarEmpleado();
             case 4 -> () -> menuHandler.eliminarEmpleado();
             case 5 -> () -> menuHandler.buscarEmpleadoID();
+            case 6 -> () -> menuHandler.buscarEmpleadoPorDNI();
 
-            // Opciones de Legajo
-            case 6 -> () -> menuHandler.crearLegajo();
-            case 7 -> () -> menuHandler.listarLegajos();
-            case 8 -> () -> menuHandler.actualizarLegajo();
-            case 9 -> () -> menuHandler.eliminarLegajo();
-            case 10 -> () -> menuHandler.listarLegajoPorEstado();
+            // Opciones de Legajo (Re-numeradas)
+            case 7 -> () -> menuHandler.crearLegajo();
+            case 8 -> () -> menuHandler.listarLegajos();
+            case 9 -> () -> menuHandler.actualizarLegajo();
+            case 10 -> () -> menuHandler.eliminarLegajo();
+            case 11 -> () -> menuHandler.listarLegajoPorEstado();
 
-            default -> null;
+            default -> null; // Opción no válida
         };
 
         if (action == null) {
             System.out.println(INVALID_OPTION_MESSAGE);
-            return true;
+            return true; // Continúa el bucle
         }
 
         executeMenuAction(action);
-        return true;
+        return true; // Continúa el bucle
     }
 
     /**
@@ -103,22 +109,36 @@ public class AppMenu {
      */
     private void executeMenuAction(MenuAction action) {
         try {
-            action.run();
-        } catch (UnsupportedOperationException e) {
-            System.err.println(BUSINESS_RULE_ERROR_PREFIX + e.getMessage());
-        } catch (IllegalArgumentException e) {
+            action.run(); // Ejecuta la acción (ej. crearEmpleado)
+
+            // --- Manejo de Errores Específicos ---
+
+        } catch (ServiceException e) {
+            // Errores controlados de la capa de servicio (ej. "No se encontró el ID")
             System.err.println(DATA_ERROR_PREFIX + e.getMessage());
+
+        } catch (UnsupportedOperationException e) {
+            // Errores de funciones no implementadas (ej. "Opción 3 no implementada")
+            System.err.println(BUSINESS_RULE_ERROR_PREFIX + e.getMessage());
+
+        } catch (IllegalArgumentException e) {
+            // Errores de validación de datos (ej. "El ID debe ser un número")
+            System.err.println(DATA_ERROR_PREFIX + e.getMessage());
+
         } catch (Exception e) {
+            // Captura genérica para cualquier otro error (ej. base de datos desconectada)
             System.err.println(UNEXPECTED_ERROR_PREFIX + e.getMessage());
-            e.printStackTrace();
+            e.printStackTrace(); // Mostramos la traza completa para errores inesperados
         }
 
+        // Pausa para que el usuario pueda leer el mensaje antes de volver al menú
         System.out.println(PRESS_ENTER_TO_CONTINUE_MESSAGE);
         scanner.nextLine();
     }
 
     /**
      * Inicializa la cadena de dependencias (DAOs, Services, MenuHandler).
+     * Este es el núcleo de la Inyección de Dependencias.
      */
     private MenuHandler initializeMenuHandler() {
         // 1. DAOs (capa de datos)
@@ -129,7 +149,7 @@ public class AppMenu {
         LegajoServiceImpl legajoService = new LegajoServiceImpl(legajoDAO);
         EmpleadoServiceImpl empleadoService = new EmpleadoServiceImpl(empleadoDAO, legajoService);
 
-        // 3. MenuHandler
+        // 3. MenuHandler (capa de presentación/controlador)
         return new MenuHandler(this.scanner, empleadoService, legajoService);
     }
 
@@ -139,6 +159,8 @@ public class AppMenu {
      */
     @FunctionalInterface
     private interface MenuAction {
+        // Se usa 'throws Exception' para capturar cualquier tipo de error
+        // en el bloque 'executeMenuAction'
         void run() throws Exception;
     }
 }
