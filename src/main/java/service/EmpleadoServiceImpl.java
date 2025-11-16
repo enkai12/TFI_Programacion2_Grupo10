@@ -213,6 +213,19 @@ public class EmpleadoServiceImpl implements GenericService<Empleado> {
         return empleadoDAO.leer(id);
     }
 
+    
+    public Empleado getByDni(String dni)throws Exception {
+        if (!dni.matches("\\d+")) {
+        throw new IllegalArgumentException("El DNI debe contener solo números");
+        }
+        return empleadoDAO.buscarPorDni(dni);
+    }
+    
+    public LegajoServiceImpl getLegajoService() {
+        return this.legajoService;
+    }
+    
+    
     @Override
     public List<Empleado> getAll() throws Exception {
         return empleadoDAO.leerTodos();

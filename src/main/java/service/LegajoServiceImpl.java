@@ -1,8 +1,10 @@
 package service;
 
 import dao.LegajoDAO;
+import entities.EstadoLegajo;
 import entities.Legajo;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -194,4 +196,16 @@ public class LegajoServiceImpl implements GenericService<Legajo> {
         return legajoDAO.leerTodos();
     }
     
+    public List<Legajo> getByEstado(EstadoLegajo estado) throws Exception {
+        List<Legajo> filtrados = new ArrayList<>();
+
+        for (Legajo l : legajoDAO.leerTodos()) {
+            if (l.getEstado() == estado) {
+                filtrados.add(l);
+            }
+        }
+
+    return filtrados;
+    }
 }
+

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 import service.EmpleadoServiceImpl;
-import service.LegajoServiceImpl;
 
 /**
  * Controlador de las operaciones del menú (Menu Handler).
@@ -35,7 +34,7 @@ public class MenuHandler {
 
     private static final String EMPLOYEE_LIST_HEADER = "Listando Empleados:";
     private static final String EMPLOYEE_SEPARATOR = "-----------------";
-
+    private static final String LEGAJO_LIST_HEADER = "Listando Legajos: ";
     /**
      * Constructor con inyección de dependencias.
      * Valida que las dependencias no sean null (fail-fast).
@@ -96,9 +95,12 @@ public class MenuHandler {
          Empleado empleadoNuevo = new Empleado(nombre, apellido, dni, email,fechaIngreso, area, legajoNuevo);
          
          empleadoService.insertar(empleadoNuevo);
+         
+          System.out.print("El empleado: " + empleadoNuevo.getNombre() + " "+ empleadoNuevo.getApellido() + " se ha creado con éxito");
+         
         }
           catch (Exception e) {
-            System.err.println("Error al crear persona: " + e.getMessage());
+            System.err.println("Error al crear Empleado: " + e.getMessage());
         }
          
     }
@@ -120,11 +122,9 @@ public class MenuHandler {
                 return EstadoLegajo.INACTIVO;
             default:
                 System.out.println("Opción inválida. Intente nuevamente.\n");
+            }
         }
-    }
-}
-
-    
+    }   
     
     /**
      * Muestra los empleados activos.
@@ -155,7 +155,106 @@ public class MenuHandler {
      * (Por ahora sin implementar).
      */
     public void actualizarEmpleado() {
-        throw new UnsupportedOperationException("Actualizar empleado aún no está implementado.");
+         try {
+        System.out.println("=== Actualizar empleado ===");
+        System.out.println("1 - Buscar por ID");
+        System.out.println("2 - Buscar por DNI");
+        System.out.print("Opción: ");
+
+        String opcion = scanner.nextLine();
+        Empleado e = null;
+        
+
+        switch (opcion) {
+            case "1":
+                System.out.print("Ingrese ID del empleado: ");
+                Long id = Long.parseLong(scanner.nextLine());
+                e = empleadoService.getById(id);
+                break;
+
+            case "2":
+                System.out.print("Ingrese DNI del empleado: ");
+                String dni = scanner.nextLine();
+                e = empleadoService.getByDni(dni);
+                break;
+
+            default:
+                System.out.println("Opción inválida.");
+                return;
+        }           
+                      
+            
+            if (e == null) {
+                System.out.println("Empleado no encontrada.");
+                return;
+            }
+
+            System.out.print("Nuevo nombre (actual: " + e.getNombre() + ", Enter para mantener): ");
+            String nombre = scanner.nextLine().trim();
+            if (!nombre.isEmpty()) {
+                e.setNombre(nombre);
+            }
+
+            System.out.print("Nuevo apellido (actual: " + e.getApellido() + ", Enter para mantener): ");
+            String apellido = scanner.nextLine().trim();
+            if (!apellido.isEmpty()) {
+                e.setApellido(apellido);
+            }
+
+            System.out.print("Nuevo DNI (actual: " + e.getDni() + ", Enter para mantener): ");
+            String dni = scanner.nextLine().trim();
+            if (!dni.isEmpty()) {
+                e.setDni(dni);
+            }
+            
+            System.out.print("Nuevo Email (actual: " + e.getEmail() + ", Enter para mantener): ");
+            String email = scanner.nextLine().trim();
+            if (!email.isEmpty()) {
+                e.setEmail(email);
+            }
+            
+            System.out.print("Nuevo Area (actual: " + e.getArea() + ", Enter para mantener): ");
+            String area = scanner.nextLine().trim();
+            if (!area.isEmpty()) {
+                e.setDni(area);
+            }
+            
+            System.out.print("Desea Tambien Actualizar su Legajo? :  1. = SI / 2 = NO ");
+            String opc = scanner.nextLine();
+            
+            if (opc == "1") {                
+                    Legajo l = e.getLegajo();
+
+                    System.out.print("Nuevo Numero de Legajo (actual: " + l.getNumeroLegajo() + ", Enter para mantener): ");
+                    String numeroLegajoNuevo = scanner.nextLine().trim();
+                    if (!numeroLegajoNuevo.isEmpty()) {
+                        l.setNumeroLegajo(numeroLegajoNuevo);
+                    }
+
+                    System.out.print("Nueva Categoria (actual: " + l.getCategoria() + ", Enter para mantener): ");
+                    String categoriaNueva = scanner.nextLine().trim();
+                    if (!categoriaNueva.isEmpty()) {
+                        l.setCategoria(categoriaNueva);
+                    }
+
+                    System.out.print("Nuevas Observaciones (actual: " + l.getObservaciones() + ", Enter para mantener): ");
+                    String observacionesNueva = scanner.nextLine().trim();
+                    if (!observacionesNueva.isEmpty()) {
+                        l.setObservaciones(observacionesNueva);
+                    }
+
+                    EstadoLegajo nuevoEstado = leerEstadoEmpleado();
+                    if (nuevoEstado != l.getEstado()) {
+                        l.setEstado(nuevoEstado);
+                    }
+                    e.setLegajo(l);
+            }
+            
+            empleadoService.actualizar(e);
+            System.out.println("Empleado actualizada exitosamente.");
+        } catch (Exception e) {
+            System.err.println("Error al actualizar persona: " + e.getMessage());
+        }
     }
 
     /**
@@ -163,7 +262,54 @@ public class MenuHandler {
      * (Por ahora sin implementar).
      */
     public void eliminarEmpleado() {
-        throw new UnsupportedOperationException("Eliminar empleado aún no está implementado.");
+          try {
+            System.out.println("=== Eliminar empleado ===");
+        System.out.println("1 - Buscar por ID");
+        System.out.println("2 - Buscar por DNI");
+        System.out.print("Opción: ");
+
+        String opcion = scanner.nextLine();
+        Empleado e = null;
+
+        switch (opcion) {
+            case "1":
+                System.out.print("Ingrese ID del empleado: ");
+                Long id = Long.parseLong(scanner.nextLine());
+                e = empleadoService.getById(id);
+                break;
+
+            case "2":
+                System.out.print("Ingrese DNI del empleado: ");
+                String dni = scanner.nextLine();
+                e = empleadoService.getByDni(dni);
+                break;
+
+            default:
+                System.out.println("Opción inválida.");
+                return;
+            }           
+        
+        if (e == null) {
+            System.out.println("Empleado no encontrado.");
+            return;
+        }
+        System.out.println("Empleado encontrado:");
+        System.out.println(e);
+        
+        System.out.print("Confirmar eliminación del empleado y su legajo? (s/N): ");
+        String conf = scanner.nextLine().trim();
+        if (!conf.equalsIgnoreCase("s")) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
+        
+        empleadoService.eliminar(e.getId());
+                    
+        
+          }catch (Exception e) {
+            System.err.println("Error al eliminar persona: " + e.getMessage());
+        }
+        
     }
 
     /**
@@ -173,8 +319,8 @@ public class MenuHandler {
     public void buscarEmpleadoID() {
         try {
             System.out.println("== Buscar empleado por ID ==");
-            System.out.print("ID de la persona a eliminar: ");
-            int id = Integer.parseInt(scanner.nextLine());
+            System.out.print("ID del empleado buscado: ");
+            Long id = Long.parseLong(scanner.nextLine());
             Empleado empleado = empleadoService.getById(id);
             if (empleado == null) {
                 System.out.println("Empleado no encontrado con ID: " + id);
@@ -199,15 +345,79 @@ public class MenuHandler {
      * Opción de menú: listar legajos.
      * (Por ahora sin implementar).
      */
-    public void listarLegajos() {
-        throw new UnsupportedOperationException("Actualizar legajo aún no está implementado.");
-
+    
+    
+    
+     public void listarLegajos() {
+        System.out.println(LEGAJO_LIST_HEADER);
+        try {
+            List<Legajo> legajo = empleadoService.getLegajoService().getAll();
+            if (legajo.isEmpty()) {
+                System.out.println("No hay empleados.");
+                return;
+            }
+            printLegajos(legajo);
+        } catch (Exception e) {
+            System.err.println("\nERROR al listar empleados: " + e.getMessage());
+        }
+    }
+     
+     public void printLegajos(List<Legajo> legajos) {
+        for (Legajo legajo : legajos) {
+            System.out.println(legajo);
+            System.out.println(EMPLOYEE_SEPARATOR);
+        }
+    }
     /**
      * Opción de menú: actualizar legajo.
      * (Por ahora sin implementar).
      */
     public void actualizarLegajo() {
-        throw new UnsupportedOperationException("Actualizar legajo aún no está implementado.");
+        try {
+            System.out.println("=== Actualizar Legajo ===");
+        
+            System.out.println("Buscar empleado a actualizar por ID : Coloque su ID");
+            Long id = Long.parseLong(scanner.nextLine());
+        
+            Legajo l = empleadoService.getLegajoService().getById(id);
+            
+            if (l == null) {
+                System.out.println("Legajo no encontrado.");
+                return;
+            }
+
+            System.out.print("Nuevo Numero de Legajo (actual: " + l.getNumeroLegajo() + ", Enter para mantener): ");
+            String numeroLegajoNuevo = scanner.nextLine().trim();
+            if (!numeroLegajoNuevo.isEmpty()) {
+                l.setNumeroLegajo(numeroLegajoNuevo);
+            }
+            
+            System.out.print("Nueva Categoria (actual: " + l.getCategoria() + ", Enter para mantener): ");
+            String categoriaNueva = scanner.nextLine().trim();
+            if (!categoriaNueva.isEmpty()) {
+                l.setCategoria(categoriaNueva);
+            }
+            
+            System.out.print("Nuevas Observaciones (actual: " + l.getObservaciones() + ", Enter para mantener): ");
+            String observacionesNueva = scanner.nextLine().trim();
+            if (!observacionesNueva.isEmpty()) {
+                l.setObservaciones(observacionesNueva);
+            }
+            
+            EstadoLegajo nuevoEstado = leerEstadoEmpleado();
+            if (nuevoEstado != l.getEstado()) {
+                l.setEstado(nuevoEstado);;
+            }
+            
+            empleadoService.getLegajoService().actualizar(l);
+            System.out.println("Legajo actualizado exitosamente.");
+            
+        }
+        catch (Exception e) {
+            System.err.println("\nERROR al listar empleados: " + e.getMessage());
+        }
+        
+        
     }
 
     /**
@@ -223,6 +433,22 @@ public class MenuHandler {
      * (Por ahora sin implementar).
      */
     public void listarLegajoPorEstado() {
-        throw new UnsupportedOperationException("Listar legajos por estado aún no está implementado.");
+        try {
+        System.out.println("1 - Activos");
+        System.out.println("2 - Inactivos");
+        int opc = Integer.parseInt(scanner.nextLine());
+
+        EstadoLegajo estado = (opc == 1) ? EstadoLegajo.ACTIVO : EstadoLegajo.INACTIVO;
+        
+        List<Legajo> datos = empleadoService.getLegajoService().getByEstado(estado);
+            
+            
+        for (Legajo l : datos) {
+           System.out.println(l);
+            }
+        
+        }catch (Exception e) {
+            System.err.println("\nERROR al listar empleados: " + e.getMessage());
+        }
     }
 }

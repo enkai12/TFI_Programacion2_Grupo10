@@ -74,11 +74,10 @@ public class AppMenu {
             case 3 -> menuHandler.actualizarEmpleado();
             case 4 -> menuHandler.eliminarEmpleado();
             case 5 -> menuHandler.buscarEmpleadoID();
-            case 6 -> menuHandler.crearLegajo();
-            case 7 -> menuHandler.listarLegajos();
-            case 8 -> menuHandler.actualizarLegajo();
-            case 9 -> menuHandler.eliminarLegajo();
-            case 10 -> menuHandler.listarLegajoPorEstado();
+            case 6 -> menuHandler.listarLegajos();
+            case 7 -> menuHandler.actualizarLegajo();
+            case 8 -> menuHandler.listarLegajoPorEstado();
+            
             case EXIT_OPTION -> {
                 System.out.println(EXIT_MESSAGE);
                 return false;
