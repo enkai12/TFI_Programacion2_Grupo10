@@ -49,7 +49,7 @@ Se seleccionó el dominio **Empleado (A) → Legajo (B)** por su aplicabilidad p
 
 El requisito principal del trabajo es modelar una **asociación unidireccional 1 a 1**, y el dominio `Empleado → Legajo` representa este escenario de forma natural en un sistema de gestión de personal. Un *Empleado* posee un único *Legajo* en su expediente, y un *Legajo* pertenece exclusivamente a un *Empleado*.
 
-Esta correlación directa permite implementar la restricción **1 a 1** en la base de datos mediante una **clave foránea única** (`UNIQUE FOREIGN KEY`) en la tabla `empleado`, apuntando a `legajo`. Esto garantiza que cada empleado tenga un solo legajo y viceversa.
+Esta correlación directa permite implementar la restricción 1 a 1 en la base de datos mediante una clave foránea única (UNIQUE FOREIGN KEY) en la tabla legajo (específicamente, la columna empleado_id), apuntando a empleado. Esto garantiza que cada empleado tenga un solo legajo y viceversa.
 
 Además, el dominio permite aplicar de manera práctica el uso de **transacciones (commit/rollback)**. El alta de un empleado constituye un caso ideal para demostrar la atomicidad: la creación de un *Empleado* (entidad A) requiere la creación simultánea de su *Legajo* (entidad B). Si alguna de las inserciones falla (por ejemplo, por violar una restricción `UNIQUE` en `nro_legajo`), toda la operación debe revertirse, asegurando la integridad del sistema.
 
