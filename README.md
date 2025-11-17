@@ -119,7 +119,7 @@ Esto justifica una asociación unidireccional donde la entidad `Empleado` conoce
 
    Esto creará la base de datos `tpi_prog2_empleados` junto con las tablas `empleado` y `legajo`.
 
-3. Ejecutar el script `insert_data.sql`:
+3. Seleccionar base de datos y Ejecutar el script `insert_data.sql`:
 
    ```sql
    SOURCE sql/insert_data.sql;
@@ -149,16 +149,17 @@ Dado que los archivos del entorno (`nbproject/`, `build.xml`, etc.) no se incluy
 8. Una vez creado el proyecto, en el panel izquierdo hacer **clic derecho sobre “Libraries” → Add JAR/Folder...**  
 9. Seleccionar el archivo **`mysql-connector-j-9.5.0.jar`** ubicado dentro de la carpeta `/lib/` del repositorio.  
 10. Confirmar con **Open** y verificar que el JAR aparezca en la lista de librerías del proyecto.  
-11. Luego, copiar el archivo **`config.properties.example`** y usarlo de modelo para **`config.properties`** (ubicarlo en la carpeta `src/` o en la raíz del proyecto) y completar las credenciales de conexión a MySQL:
+11. Luego, copiar el archivo **`config.properties.example`** y usarlo de modelo para **`config.properties`** (ubicarlo en la carpeta `src/` o una carpeta nueva `src/main/resources/` o en la raíz del proyecto) y completar las credenciales de conexión a MySQL:
 
     ```properties
-    db.url=jdbc:mysql://localhost:3306/tpi_prog2_empleados
+    db.url=jdbc:mysql://localhost:3306/
+    db.name=tpi_prog2_empleados
     db.user=root
-    db.password=tu_contraseña
-    db.driver=com.mysql.cj.jdbc.Driver
+    db.pass=ESCRIBE_TU_CLAVE_LOCAL_AQUI
     ```
 
     ⚠️ *Es importante reemplazar `tu_contraseña` por la clave real del usuario `root` en tu instalación local de MySQL.*
+       *Hacer Cleand and Build del proyecto si es necesario*
 
 Con esto, NetBeans generará automáticamente los archivos de configuración locales (`nbproject/`, `build.xml`, etc.), agregará el conector JDBC y establecerá los parámetros de conexión a la base de datos.  
 El proyecto quedará listo para compilar y ejecutar correctamente desde el IDE.
