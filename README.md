@@ -4,7 +4,8 @@
 
 **Link al video explicativo:** https://youtu.be/tlba6bTBGB0
 
-**Link secundario:** https://drive.google.com/file/d/1tR6CAjF2fkM8lgNX4Pv6hndnKGzz3X3H/view?usp=sharing 
+**Link secundario:** https://drive.google.com/file/d/1tR6CAjF2fkM8lgNX4Pv6hndnKGzz3X3H/view?usp=sharing
+
 ---
 
 ## Integrantes del Equipo
@@ -102,7 +103,32 @@ Esto justifica una asociación unidireccional donde la entidad `Empleado` conoce
 * **Conector JDBC MySQL (`mysql-connector-j-9.5.0.jar`)**
 
 ---
+### Creación de la Base de Datos
 
+1. Abrir **DBeaver** y conectarse a MySQL como usuario `root`.
+
+2. Ejecutar el script `create_database.sql` ubicado en la carpeta `/sql/`:
+
+   ```sql
+   SOURCE sql/create_database.sql;
+   ```
+
+   Esto creará la base de datos `tpi_prog2_empleados` junto con las tablas `empleado` y `legajo`.
+
+3. Ejecutar el script `insert_data.sql`:
+
+   ```sql
+   SOURCE sql/insert_data.sql;
+   ```
+
+   Esto insertará datos de prueba coherentes con el dominio `Empleado → Legajo`.
+
+4. Verificar la correcta creación de los registros con:
+
+   ```sql
+   SELECT * FROM empleado;
+   SELECT * FROM legajo;
+   ```
 ---
 
 ## 3. Importación del Proyecto en Apache NetBeans
@@ -134,36 +160,6 @@ Con esto, NetBeans generará automáticamente los archivos de configuración loc
 El proyecto quedará listo para compilar y ejecutar correctamente desde el IDE.
 
 ---
-
-
-
-
-### Creación de la Base de Datos
-
-1. Abrir **DBeaver** y conectarse a MySQL como usuario `root`.
-
-2. Ejecutar el script `create_database.sql` ubicado en la carpeta `/sql/`:
-
-   ```sql
-   SOURCE sql/create_database.sql;
-   ```
-
-   Esto creará la base de datos `tpi_prog2_empleados` junto con las tablas `empleado` y `legajo`.
-
-3. Ejecutar el script `insert_data.sql`:
-
-   ```sql
-   SOURCE sql/insert_data.sql;
-   ```
-
-   Esto insertará datos de prueba coherentes con el dominio `Empleado → Legajo`.
-
-4. Verificar la correcta creación de los registros con:
-
-   ```sql
-   SELECT * FROM empleado;
-   SELECT * FROM legajo;
-   ```
 
 ---
 
