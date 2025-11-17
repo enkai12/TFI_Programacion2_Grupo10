@@ -139,11 +139,11 @@ Dado que los archivos del entorno (`nbproject/`, `build.xml`, etc.) no se incluy
 2. Ir a **File → New Project...**  
 3. Seleccionar **Java with Ant → Java Project with Existing Sources** y presionar **Next**.  
 4. Asignar el nombre del proyecto (por ejemplo, `TFI_Programacion2_Grupo10`).  
-5. En **Source Package Folders**, seleccionar la carpeta `src/` del repositorio clonado.  
-6. En **Project Folder**, elegir la ubicación donde se guardará el proyecto.  
+5. En **Project Folder**, elegir la ubicación donde se guardará el proyecto.  
+6. En **Source Package Folders**, seleccionar la carpeta `src/` del repositorio clonado.
 7. Presionar **Finish**.  
 8. Una vez creado el proyecto, en el panel izquierdo hacer **clic derecho sobre “Libraries” → Add JAR/Folder...**  
-9. Seleccionar el archivo **`mysql-connector-j-8.4.0.jar`** ubicado dentro de la carpeta `/lib/` del repositorio.  
+9. Seleccionar el archivo **`mysql-connector-j-9.5.0.jar`** ubicado dentro de la carpeta `/lib/` del repositorio.  
 10. Confirmar con **Open** y verificar que el JAR aparezca en la lista de librerías del proyecto.  
 11. Luego, abrir el archivo **`config.properties`** (ubicado en la carpeta `src/config/` o en la raíz del proyecto) y completar las credenciales de conexión a MySQL:
 
